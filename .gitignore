@@ -1,0 +1,30 @@
+/.metadata/
+*.class
+*.log
+hs_err_pid*
+
+
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / STS
+.project
+.classpath
+.settings/
+.springBeans
+
+# VS Code
+.vscode/
+
+.DS_Store
+Thumbs.db
+
+logs/
+*.log
