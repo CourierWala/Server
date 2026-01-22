@@ -1,4 +1,4 @@
-package com.courierwala.server.entities;
+package com.courierwala.server.enumfield;
 
 public enum OrderStatus {
     CREATED,            // Order created by customer

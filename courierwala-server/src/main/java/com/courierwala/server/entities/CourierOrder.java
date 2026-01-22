@@ -2,6 +2,9 @@ package com.courierwala.server.entities;
 
 import java.math.BigDecimal;
 
+import com.courierwala.server.enumfield.DeliveryType;
+import com.courierwala.server.enumfield.OrderStatus;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

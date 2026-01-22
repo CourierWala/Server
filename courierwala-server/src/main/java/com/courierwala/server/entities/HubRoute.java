@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,24 +14,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "address")
-@AttributeOverride(name = "id", column = @Column(name = "address_id"))
+@Table(name = "hub_route")
+@AttributeOverride(name = "id", column = @Column(name = "route_id"))
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class Address extends BaseEntity {
+public class HubRoute extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    private String addressLine;
-    private String pincode;
+    @JoinColumn(name = "from_hub_id", nullable = false)
+    private Hub fromHub;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
+    @JoinColumn(name = "to_hub_id", nullable = false)
+    private Hub toHub;
 
-
-    private Boolean isDefault;
+    private Double distanceKm;
 }
-
