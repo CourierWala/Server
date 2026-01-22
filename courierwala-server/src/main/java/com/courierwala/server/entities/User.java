@@ -2,6 +2,8 @@ package com.courierwala.server.entities;
 
 import java.util.List;
 
+import com.courierwala.server.enumfield.Role;
+import com.courierwala.server.enumfield.Status;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;

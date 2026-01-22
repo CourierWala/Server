@@ -1,11 +1,14 @@
 package com.courierwala.server.entities;
 
+import com.courierwala.server.enumfield.VehicleType;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -22,8 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class DeliveryStaffProfile extends BaseEntity {
 
-    @Column(unique = true)
-    private String employeeCode;
+  
 
     @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
@@ -34,9 +36,17 @@ public class DeliveryStaffProfile extends BaseEntity {
     private Double rating;
     private Integer totalDeliveries;
     private Boolean isVerified;
+    
+    private Boolean isAvailable;
+    private Integer activeOrders;
+    
+    @ManyToOne
+    @JoinColumn(name = "hub_id", nullable = false)
+    private Hub hub;
 
     @OneToOne
-    @MapsId
-    @JoinColumn(name = "staff_id")
-    private User staff;
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+    
+    
 }

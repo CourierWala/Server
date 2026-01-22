@@ -1,11 +1,15 @@
 package com.courierwala.server.entities;
 
+
+import java.util.List;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -15,24 +19,24 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "address")
-@AttributeOverride(name = "id", column = @Column(name = "address_id"))
+@Table(name = "city")
+@AttributeOverride(name = "id", column = @Column(name = "city_id"))
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class Address extends BaseEntity {
+public class City extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(unique = true, nullable = false)
+    private String cityName;
 
-    private String addressLine;
-    private String pincode;
+    private String state;
+    private Double latitude;
+    private Double longitude;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
+    @OneToOne
+    @JoinColumn(name = "hub_id")
+    private Hub hubs;
 
-
-    private Boolean isDefault;
+    @OneToMany(mappedBy = "city")
+    private List<Address> addresses;
 }
 

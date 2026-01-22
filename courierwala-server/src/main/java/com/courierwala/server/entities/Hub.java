@@ -1,11 +1,17 @@
 package com.courierwala.server.entities;
 
+
+import java.util.List;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -15,24 +21,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "address")
-@AttributeOverride(name = "id", column = @Column(name = "address_id"))
+@Table(name = "hub")
+@AttributeOverride(name = "id", column = @Column(name = "hub_id"))
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
-public class Address extends BaseEntity {
+public class Hub extends BaseEntity {
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private String hubName;
 
-    private String addressLine;
-    private String pincode;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    private Double latitude;
+    private Double longitude;
+
+    @OneToOne
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
 
+    @OneToMany(mappedBy = "hub")
+    private List<DeliveryStaffProfile> DeliveryStaff;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id", unique = true)
+    private User manager;
 
-    private Boolean isDefault;
 }
-
