@@ -1,9 +1,11 @@
 package com.courierwala.server.entities;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import com.courierwala.server.enumfield.DeliveryType;
 import com.courierwala.server.enumfield.OrderStatus;
+import com.courierwala.server.enumfield.PackageSize;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -12,6 +14,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -42,7 +45,7 @@ public class CourierOrder extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
-
+                                 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pickup_address_id", nullable = false)
     private Address pickupAddress;
@@ -58,11 +61,20 @@ public class CourierOrder extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private DeliveryType deliveryType;
 
+    @Enumerated(EnumType.STRING)
+    private PackageSize packageSize;
+    
     private Double distanceKm;
     private BigDecimal price;
-
+ 
+    private LocalDate pickupDate;
+    
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
+    
+    @Lob
+    @Column(nullable = true)
+    private String packageDescription;
 
     @Version
     private Long version;
