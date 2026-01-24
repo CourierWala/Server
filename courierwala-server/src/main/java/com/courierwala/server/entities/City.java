@@ -28,9 +28,9 @@ public class City extends BaseEntity {
     @Column(unique = true, nullable = false)
     private String cityName;                    
 
-//    private String state;
-    private Double latitude;
-    private Double longitude;
+////    private String state;
+//    private Double latitude;
+//    private Double longitude;
 
     @OneToOne
     @JoinColumn(name = "hub_id")

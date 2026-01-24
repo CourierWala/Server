@@ -2,6 +2,7 @@ package com.courierwala.server.service;
 
 import com.courierwala.server.customerdto.*;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.RoutingResult;
 import com.courierwala.server.entities.Address;
 import com.courierwala.server.entities.City;
 import com.courierwala.server.entities.CourierOrder;
@@ -9,6 +10,7 @@ import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.DeliveryType;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.PackageSize;
+import com.courierwala.server.enumfield.PaymentStatus;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
 import com.courierwala.server.repository.AddressRepository;
@@ -21,65 +23,54 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
-
 @Service
 @RequiredArgsConstructor
 @Transactional
 
-public class CustomerServiceImpl implements CustomerService{
+public class CustomerServiceImpl implements CustomerService {
 
+	private final UserRepository customerRepo;
+	private final CityRepository cityRepository;
+	private final AddressRepository addressRepository;
+	private final CourierOrderRepository courierOrderRepository;
+	private final UserRepository userRepository;
+    private final ShipmentRoutingService shipmentRoutingService;
+    private final OrderHubPathService orderHubPathService;
+	
+	public void signUp(SignUpDTO dto) {
 
-    private final UserRepository customerRepo;
-    private final CityRepository cityRepository;
-    private final AddressRepository addressRepository;
-    private final CourierOrderRepository courierOrderRepository;
-    private final UserRepository userRepository;
+		if (customerRepo.existsByEmail(dto.getEmail())) {
+			throw new IllegalStateException("Email already registered");
+		}
 
+		User user = User.builder().name(dto.getName()).email(dto.getEmail()).password(dto.getPassword()) // hash later
+				.phone(dto.getPhone()).role(Role.ROLE_CUSTOMER).status(Status.ACTIVE).build();
 
-    public void signUp(SignUpDTO dto) {
+		customerRepo.save(user);
+	}
 
-        if (customerRepo.existsByEmail(dto.getEmail())) {
-            throw new IllegalStateException("Email already registered");
-        }
+	@Override
+	public User login(LoginDTO dto) {
 
-        User user = User.builder()
-                .name(dto.getName())
-                .email(dto.getEmail())
-                .password(dto.getPassword()) // hash later
-                .phone(dto.getPhone())
-                .role(Role.ROLE_CUSTOMER)
-                .status(Status.ACTIVE)
-                .build();
+		User user = customerRepo.findByEmail(dto.getEmail())
+				.orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
 
-        customerRepo.save(user);
-    }
+		if (!user.getPassword().equals(dto.getPassword())) {
+			throw new IllegalArgumentException("Invalid email or password");
+		}
 
-    @Override
-    public User login(LoginDTO dto) {
+		if (user.getStatus() != Status.ACTIVE) {
+			throw new IllegalStateException("User account is not active");
+		}
 
-        User user = customerRepo.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
+		return user;
+	}
 
-        if (!user.getPassword().equals(dto.getPassword())) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
+	@Override
+	public CustomerProfileDto getCustomerProfile(Long customerId) {
 
-        if (user.getStatus() != Status.ACTIVE) {
-            throw new IllegalStateException("User account is not active");
-        }
-
-        return user;
-    }
-
-
-
-
-    @Override
-    public CustomerProfileDto getCustomerProfile(Long customerId) {
-
-        User user = customerRepo.findById(customerId)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+		User user = customerRepo.findById(customerId)
+				.orElseThrow(() -> new IllegalStateException("Customer not found"));
 
 //        List<AddressResponse> addressResponses =
 //                user.getAddresses().stream()
@@ -98,103 +89,85 @@ public class CustomerServiceImpl implements CustomerService{
 //                .phone(user.getPhone())
 //                .addresses(addressResponses)
 //                .build();
-        
-        return null;
-    }
 
-    @Override
-    public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
+		return null;
+	}
 
-        User user = customerRepo.findById(customerId)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
-        System.out.println(dto.getName());
-        user.setName(dto.getName());
-        user.setPhone(dto.getPhone());
+	@Override
+	public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
 
-        customerRepo.save(user);
-    }
+		User user = customerRepo.findById(customerId)
+				.orElseThrow(() -> new IllegalStateException("Customer not found"));
+		System.out.println(dto.getName());
+		user.setName(dto.getName());
+		user.setPhone(dto.getPhone());
 
-    @Override
-    public ApiResponse createShipment(ShipmentRequest req) {
+		customerRepo.save(user);
+	}
 
-        User customer = getLoggedInUser(); // from SecurityContext
+	@Override
+	public ApiResponse createShipment(ShipmentRequest req) {
 
-        City pickupCity = getOrCreateCity(req.getPickupCity(), req);
-        City deliveryCity = getOrCreateCity(req.getDeliveryCity(), req);
+		User customer = getLoggedInUser();
 
-        Address pickupAddress = createAddress(
-                customer,
-                req.getPickupAddress(),
-                req.getPickupPincode(),
-                pickupCity
-        );
+		City pickupCity = getOrCreateCity(req.getPickupCity());
+		City deliveryCity = getOrCreateCity(req.getDeliveryCity());
 
-        Address deliveryAddress = createAddress(
-                customer,
-                req.getDeliveryAddress(),
-                req.getDeliveryPincode(),
-                deliveryCity
-        );
+		Address pickupAddress = createAddress(customer, req.getPickupAddress(), req.getPickupPincode(), pickupCity, req.getPickupLatitude(),
+				         req.getPickupLongitude());
 
-        CourierOrder order = CourierOrder.builder()
-                .trackingNumber(generateTrackingNumber())
-                .customer(customer)
-                .pickupAddress(pickupAddress)
-                .deliveryAddress(deliveryAddress)
-                .packageWeight(req.getWeight())
-                .packageSize(PackageSize.valueOf(req.getPackageSize()))
-                .deliveryType(DeliveryType.valueOf(req.getDeliveryType()))
-                .pickupDate(req.getPickupDate())
-                .orderStatus(OrderStatus.CREATED)
-                .packageDescription(req.getDescription())
-                .build();
+		Address deliveryAddress = createAddress(customer, req.getDeliveryAddress(), req.getDeliveryPincode(),
+				deliveryCity, req.getDeliveryLatitude(), req.getDeliveryLongitude());												
 
-        courierOrderRepository.save(order);
+		System.out.println("before calling ===========================================================================");
+		RoutingResult routing = shipmentRoutingService.decideRouting(req.getPickupLatitude(), req.getPickupLongitude(),
+				req.getDeliveryLatitude(), req.getDeliveryLongitude());
+		
+		System.out.println("after calling ======================================================================");
 
-        return new ApiResponse(
-                "Shipment created successfully",
-                "success"
-        );
-    }
+		CourierOrder order = CourierOrder.builder().trackingNumber(generateTrackingNumber()).customer(customer)
+				.pickupAddress(pickupAddress).deliveryAddress(deliveryAddress).sourceHub(routing.getSourceHub())
+				.destinationHub(routing.getDestinationHub()).currentHub(routing.getSourceHub())
+				.distanceKm(routing.getDistanceKm()).packageWeight(req.getWeight())
+				.packageSize(PackageSize.valueOf(req.getPackageSize()))
+				.deliveryType(DeliveryType.valueOf(req.getDeliveryType())).pickupDate(req.getPickupDate())
+				.orderStatus(OrderStatus.AT_SOURCE_HUB)
+				.paymentStatus(PaymentStatus.PENDING).paymentRequired(true).packageDescription(req.getDescription())
+				.build();
 
-    /* ---------------- helper methods ---------------- */
+		courierOrderRepository.save(order);
 
-    private City getOrCreateCity(String cityName, ShipmentRequest req) {
-        return cityRepository.findByCityNameIgnoreCase(cityName)
-                .orElseGet(() -> cityRepository.save(
-                        City.builder().cityName(cityName)
-                        .latitude(req.getDeliveryLatitude())
-                        .longitude(req.getDeliveryLongitude())
-                        .build()
-                ));
-    }
+		if (!routing.isDirect()) {
+			orderHubPathService.savePath(order, routing.getHubPath());
+		}
 
-    private Address createAddress(
-            User user,
-            String street,
-            String pincode,
-            City city) {
+		return new ApiResponse("Shipment created successfully", "success");
+	}
 
-        Address address = Address.builder()
-                .user(user)
-                .streetAddress(street)
-                .pincode(pincode)
-                .city(city)
-                .isDefault(false)
-                .build();
+	/* ---------------- helper methods ---------------- */
 
-        return addressRepository.save(address);
-    }
+	private City getOrCreateCity(String cityName) {
+		return cityRepository.findByCityNameIgnoreCase(cityName).orElseGet(() -> cityRepository.save(City.builder()
+				.cityName(cityName).build()));
+	}
 
-    private String generateTrackingNumber() {
-        return "CW" + System.currentTimeMillis();
-    }
+	private Address createAddress(User user, String street, String pincode, City city, double lat, double lng) {
 
-    private User getLoggedInUser() {
-        // later: SecurityContextHolder
-        return userRepository.findById(1L)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-    }
+		Address address = Address.builder().user(user).streetAddress(street).pincode(pincode).city(city)
+		         .latitude(lat)
+		         .longitude(lng)
+				.isDefault(false).build();
 
+		return addressRepository.save(address);
+	}
+
+	private String generateTrackingNumber() {
+		return "CW" + System.currentTimeMillis();
+	}
+
+	private User getLoggedInUser() {
+		// later: SecurityContextHolder
+		return userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
+	}
 
 }

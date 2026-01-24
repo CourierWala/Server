@@ -28,6 +28,7 @@ public class HubRoute extends BaseEntity {
     @JoinColumn(name = "to_hub_id", nullable = false)
     private Hub toHub;
 
+    @Column(name = "distance_km")
     private Double distanceKm;
 }
 

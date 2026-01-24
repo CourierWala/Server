@@ -1,7 +1,6 @@
 package com.courierwala.server.controller;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -25,13 +24,15 @@ import com.courierwala.server.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class CustomerController {
 
-	@Autowired
 	private final CustomerService customerService;
 
 	@PostMapping("/signup")
@@ -81,6 +82,7 @@ public class CustomerController {
 	@PostMapping("/shipments")
 	public ResponseEntity<?> createShipment(@Valid @RequestBody ShipmentRequest request) {
 
+		System.out.println("in create shipment !!");
 		ApiResponse shipmentResponce = customerService.createShipment(request);
 		System.out.println("shipemt res : " + shipmentResponce);
 
