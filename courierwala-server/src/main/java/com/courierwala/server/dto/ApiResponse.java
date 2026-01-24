@@ -3,11 +3,13 @@ package com.courierwala.server.dto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 public class ApiResponse {
     private LocalDateTime timeStamp;

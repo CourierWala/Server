@@ -1,15 +1,26 @@
 package com.courierwala.server.service;
 
 import com.courierwala.server.customerdto.*;
+import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.entities.Address;
+import com.courierwala.server.entities.City;
+import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.User;
+import com.courierwala.server.enumfield.DeliveryType;
+import com.courierwala.server.enumfield.OrderStatus;
+import com.courierwala.server.enumfield.PackageSize;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
-import com.courierwala.server.repository.CustomerRepository;
+import com.courierwala.server.repository.AddressRepository;
+import com.courierwala.server.repository.CityRepository;
+import com.courierwala.server.repository.CourierOrderRepository;
+import com.courierwala.server.repository.UserRepository;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -60,23 +71,25 @@ public class CustomerServiceImpl implements CustomerService {
         User user = customerRepo.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
-        List<AddressResponse> addressResponses =
-                user.getAddresses().stream()
-                        .map(address -> AddressResponse.builder()
-                                .addressId(address.getId())
-                                .addressLine(address.getAddressLine())
-                                .pincode(address.getPincode())
-                                .cityName(address.getCity().getCityName())
-                                .isDefault(address.getIsDefault())
-                                .build()
-                        ).toList();
-
-        return CustomerProfileDto.builder()
-                .name(user.getName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .addresses(addressResponses)
-                .build();
+//        List<AddressResponse> addressResponses =
+//                user.getAddresses().stream()
+//                        .map(address -> AddressResponse.builder()
+//                                .addressId(address.getId())
+//                                .addressLine(address.getAddressLine())
+//                                .pincode(address.getPincode())
+//                                .cityName(address.getCity().getCityName())
+//                                .isDefault(address.getIsDefault())
+//                                .build()
+//                        ).toList();
+//
+//        return CustomerProfileDto.builder()
+//                .name(user.getName())
+//                .email(user.getEmail())
+//                .phone(user.getPhone())
+//                .addresses(addressResponses)
+//                .build();
+        
+        return null;
     }
 
     @Override

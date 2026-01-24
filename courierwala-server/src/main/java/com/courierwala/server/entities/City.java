@@ -24,9 +24,9 @@ import lombok.Setter;
 public class City extends BaseEntity {
 
     @Column(unique = true, nullable = false)
-    private String cityName;
+    private String cityName;                    
 
-    private String state;
+//    private String state;
     private Double latitude;
     private Double longitude;
 

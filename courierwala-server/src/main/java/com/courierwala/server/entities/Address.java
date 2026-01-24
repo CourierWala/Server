@@ -22,10 +22,10 @@ import lombok.Setter;
 public class Address extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)           
     private User user;
 
-    private String addressLine;
+    private String streetAddress;
     private String pincode;
 
     @ManyToOne(fetch = FetchType.LAZY)
