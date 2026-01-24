@@ -11,11 +11,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LocationServiceImpl implements LocationService {
 
-    @Value("${olamaps.api.key}")
+    @Value("${olamaps.api.key:}")
     private String apiKey;
 
-    @Value("${olamaps.base-url}")
+    @Value("${olamaps.base-url:}")
     private String baseUrl;
+
 
     private final RestClient restClient;
 

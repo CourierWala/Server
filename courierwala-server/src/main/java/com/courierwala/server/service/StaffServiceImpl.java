@@ -1,13 +1,14 @@
 package com.courierwala.server.service;
 
-import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.courierwala.server.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.courierwala.server.customerdto.LoginDTO;
-import com.courierwala.server.customerdto.SignUpDTO;
+
 import com.courierwala.server.dto.ApiResponse;
+
+
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;

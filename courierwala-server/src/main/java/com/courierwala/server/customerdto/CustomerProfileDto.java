@@ -8,6 +8,7 @@ import lombok.Getter;
 @Builder
 public class CustomerProfileDto {
 
+    private Long id;
     private String name;
     private String email;
     private String phone;
