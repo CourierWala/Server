@@ -1,20 +1,18 @@
 package com.courierwala.server.service;
 
-import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.courierwala.server.customerdto.LoginDTO;
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
-import com.courierwala.server.repository.CustomerRepository;
+//import com.courierwala.server.repository.CustomerRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
+import com.courierwala.server.repository.UserRepository;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
@@ -28,7 +26,7 @@ public class StaffServiceImpl implements StaffService{
 	
 	
 	public final StaffRepository staffRepo;
-	public final CustomerRepository customerRepo;
+	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
 
 	@Override

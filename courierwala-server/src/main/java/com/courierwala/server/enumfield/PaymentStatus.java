@@ -1,7 +1,8 @@
 package com.courierwala.server.enumfield;
 
 public enum PaymentStatus {
-    PENDING,
+    CREATED,
+	PENDING,
     SUCCESS,
     FAILED
 }
