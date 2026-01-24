@@ -1,5 +1,6 @@
 package com.courierwala.server.service;
 
+import com.courierwala.server.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,7 +10,6 @@ import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
-//import com.courierwala.server.repository.CustomerRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
 import com.courierwala.server.repository.UserRepository;
