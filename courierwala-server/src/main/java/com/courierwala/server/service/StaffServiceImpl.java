@@ -7,14 +7,17 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.SignUpDTO;
+import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
-import com.courierwala.server.repository.CustomerRepository;
+import com.courierwala.server.enumfield.VehicleType;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
+import com.courierwala.server.repository.UserRepository;
+import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
@@ -28,7 +31,7 @@ public class StaffServiceImpl implements StaffService{
 	
 	
 	public final StaffRepository staffRepo;
-	public final CustomerRepository customerRepo;
+	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
 
 	@Override
@@ -138,6 +141,89 @@ public class StaffServiceImpl implements StaffService{
 	            )
 	            .vehicleNumber(staffProfile.getVehicleNumber())
 	            .build();
+	}
+
+
+	@Override
+	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto) {
+		
+		//check for email
+		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Staff profile not found with id: " + staffId)
+	            );
+		
+		User user = staffProfile.getUser();
+
+		// Role validation
+	    if (user.getRole() != Role.ROLE_DELIVERY_STAFF) {
+	        throw new RuntimeException("Invalid staff profile");
+	    }
+	    
+	    //merge first and last name
+	    String fullName = dto.getFirstName();
+	    if (dto.getLastName() != null && !dto.getLastName().isBlank()) {
+	        fullName = dto.getFirstName() + " " + dto.getLastName();
+	    }
+	    user.setName(fullName);
+	    
+	    // Update phone
+	    user.setPhone(dto.getPhone());
+
+	    // Update vehicle details
+	    if (dto.getVehicleType() != null) {
+	        staffProfile.setVehicleType(
+	                VehicleType.valueOf(dto.getVehicleType())
+	        );
+	    }
+	    staffProfile.setVehicleNumber(dto.getVehicleNumber());
+	    
+	    
+	    // Save staffProfile changes
+	    staffRepo.save(staffProfile);
+	    
+	 // Fetch updated profile
+	    staffProfileResponseDTO updatedProfile = getStaffProfile(staffId);
+
+	    // Return ApiResponse
+	    return new ApiResponse("staff profile updated successfully", "success");
+	}
+
+
+	@Override
+	public ApiResponse changePassword(Long staffId, @Valid ChangePasswordDto dto) {
+		
+		//check for email
+		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Staff profile not found with id: " + staffId)
+	            );
+
+	    User user = staffProfile.getUser();
+	    
+	    // Role validation
+	    if (user.getRole() != Role.ROLE_DELIVERY_STAFF) {
+	        throw new RuntimeException("Invalid staff");
+	    }
+
+	    // Validate current password
+	    if (!user.getPassword().equals(dto.getCurrentPassword())) {
+	        throw new RuntimeException("Current password is incorrect");
+	    }
+
+	    //  Validate new and confirm password
+	    if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+	        throw new RuntimeException("New password and confirm password do not match");
+	    }
+	    
+	 // Update password 
+	    user.setPassword(dto.getNewPassword());
+
+	    // Save changes
+	    customerRepo.save(user);
+
+	    
+		return new ApiResponse("password updated successfully","success");
 	}
 
 
