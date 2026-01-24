@@ -11,11 +11,9 @@ import com.courierwala.server.enumfield.DeliveryType;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.PackageSize;
 import com.courierwala.server.enumfield.PaymentStatus;
+import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
-import com.courierwala.server.repository.AddressRepository;
-import com.courierwala.server.repository.CityRepository;
-import com.courierwala.server.repository.CourierOrderRepository;
 import com.courierwala.server.repository.UserRepository;
 
 import jakarta.validation.Valid;
@@ -26,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-
 public class CustomerServiceImpl implements CustomerService {
+
 
 	private final UserRepository customerRepo;
 	private final CityRepository cityRepository;
@@ -48,7 +46,29 @@ public class CustomerServiceImpl implements CustomerService {
 
 		customerRepo.save(user);
 	}
+    private final UserRepository userRepository;
 
+    // ================= SIGN UP =================
+    @Override
+    public void signUp(SignUpDTO dto) {
+
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalStateException("Email already registered");
+        }
+
+        User user = User.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(dto.getPassword()) // (later encrypt)
+                .phone(dto.getPhone())
+                .role(Role.ROLE_CUSTOMER)
+                .status(Status.ACTIVE)
+                .build();
+
+        userRepository.save(user);
+    }
+
+    // ================= LOGIN =================
 	@Override
 	public User login(LoginDTO dto) {
 
@@ -58,6 +78,7 @@ public class CustomerServiceImpl implements CustomerService {
 		if (!user.getPassword().equals(dto.getPassword())) {
 			throw new IllegalArgumentException("Invalid email or password");
 		}
+  
 
 		if (user.getStatus() != Status.ACTIVE) {
 			throw new IllegalStateException("User account is not active");
@@ -141,8 +162,7 @@ public class CustomerServiceImpl implements CustomerService {
 			orderHubPathService.savePath(order, routing.getHubPath());
 		}
 
-		return new ApiResponse("Shipment created successfully", "success");
-	}
+		
 
 	/* ---------------- helper methods ---------------- */
 
@@ -169,5 +189,39 @@ public class CustomerServiceImpl implements CustomerService {
 		// later: SecurityContextHolder
 		return userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
 	}
+
+        return new ApiResponse("Shipment created successfully", "success");
+    }
+  
+  
+  
+   // ================= VIEW PROFILE =================
+    @Override
+    public CustomerProfileDto getCustomerProfile(Long customerId) {
+
+        User user = userRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+
+        return CustomerProfileDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build();
+    }
+  
+  
+   // ================= UPDATE PROFILE =================
+    @Override
+    public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
+
+        User user = userRepository.findById(customerId)
+                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+
+        user.setName(dto.getName());
+        user.setPhone(dto.getPhone());
+
+        userRepository.save(user);
+    }
 
 }
