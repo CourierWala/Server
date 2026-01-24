@@ -30,3 +30,5 @@ public class HubRoute extends BaseEntity {
 
     private Double distanceKm;
 }
+
+
