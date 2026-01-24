@@ -55,7 +55,7 @@ public class CourierOrder extends BaseEntity {
     private Address deliveryAddress;
 
 
-    private BigDecimal packageWeight;
+    private double packageWeight;
     private String packageType;
 
     @Enumerated(EnumType.STRING)

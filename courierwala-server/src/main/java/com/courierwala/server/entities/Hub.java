@@ -19,7 +19,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 @Entity
 @Table(name = "hub")
 @AttributeOverride(name = "id", column = @Column(name = "hub_id"))
@@ -27,21 +26,19 @@ import lombok.Setter;
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class Hub extends BaseEntity {
 
+    @Column(name = "hub_name", nullable = false, unique = true)  //(hub_name, hub_city, latitude, longitude, manager_id)
     private String hubName;
 
+    @Column(name = "hub_city", nullable = false)
+    private String hubCity;   
 
     private Double latitude;
     private Double longitude;
 
-    @OneToOne
-    @JoinColumn(name = "city_id", nullable = false)
-    private City city;
-
     @OneToMany(mappedBy = "hub")
-    private List<DeliveryStaffProfile> DeliveryStaff;
-    
+    private List<DeliveryStaffProfile> deliveryStaff;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id", unique = true)
     private User manager;
-
 }
