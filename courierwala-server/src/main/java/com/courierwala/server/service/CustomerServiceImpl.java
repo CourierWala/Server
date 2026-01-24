@@ -8,22 +8,17 @@ import com.courierwala.server.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-
-public class CustomerServiceImpl implements CustomerService{
-
+public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepo;
 
-
-
+    @Override
     public void signUp(SignUpDTO dto) {
 
         if (customerRepo.existsByEmail(dto.getEmail())) {
@@ -33,7 +28,7 @@ public class CustomerServiceImpl implements CustomerService{
         User user = User.builder()
                 .name(dto.getName())
                 .email(dto.getEmail())
-                .password(dto.getPassword()) // hash later
+                .password(dto.getPassword())
                 .phone(dto.getPhone())
                 .role(Role.ROLE_CUSTOMER)
                 .status(Status.ACTIVE)
@@ -58,9 +53,6 @@ public class CustomerServiceImpl implements CustomerService{
 
         return user;
     }
-
-
-
 
     @Override
     public CustomerProfileDto getCustomerProfile(Long customerId) {
@@ -92,13 +84,10 @@ public class CustomerServiceImpl implements CustomerService{
 
         User user = customerRepo.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
-        System.out.println(dto.getName());
+
         user.setName(dto.getName());
         user.setPhone(dto.getPhone());
 
         customerRepo.save(user);
     }
-
-
-
 }
