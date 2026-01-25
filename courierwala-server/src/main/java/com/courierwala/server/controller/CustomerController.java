@@ -15,16 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.courierwala.server.customerdto.CustomerProfileDto;
 import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
 import com.courierwala.server.customerdto.LoginDTO;
+import com.courierwala.server.customerdto.ShipmentRequest;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.service.CustomerService;
 
 import jakarta.validation.Valid;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 @CrossOrigin(
 	    origins = "http://localhost:5173",
@@ -37,21 +35,21 @@ public class CustomerController {
 
 	private final CustomerService customerService;
 
-	@PostMapping("/signup")
-	public ResponseEntity<?> signUp(@Valid @RequestBody SignUpDTO signupdto) {
-
-		customerService.signUp(signupdto);
-		return ResponseEntity.status(HttpStatus.CREATED)
-				.body(new ApiResponse("Customer registered successfully", "success"));
-	}
-
-	@PostMapping("/login")
-	public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
-
-		User user = customerService.login(loginDTO);
-
-		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Login Successfully ", "success"));
-	}
+//	@PostMapping("/signup")
+//	public ResponseEntity<?> signUp(@Valid @RequestBody SignUpDTO signupdto) {
+//
+//		customerService.signUp(signupdto);
+//		return ResponseEntity.status(HttpStatus.CREATED)
+//				.body(new ApiResponse("Customer registered successfully", "success"));
+//	}
+//
+//	@PostMapping("/login")
+//	public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
+//
+//		User user = customerService.login(loginDTO);
+//
+//		return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse("Login Successfully ", "success"));
+//	}
 
 
     // ================= SIGN UP =================

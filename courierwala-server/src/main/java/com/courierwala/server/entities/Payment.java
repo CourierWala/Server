@@ -30,15 +30,27 @@ public class Payment extends BaseEntity {
     @OneToOne
     @JoinColumn(name = "order_id", unique = true)
     private CourierOrder order;
-
+    
+ // Razorpay order ID (order_xxx)
+    @Column(nullable = false, unique = true)
+    private String razorpayOrderId;
+    
+ // Filled only after success
+    private String razorpayPaymentId;
+    
+    @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
+
 
     @Enumerated(EnumType.STRING)
     private PaymentMode paymentMode;
 
+ // CREATED, SUCCESS, FAILED
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
 
-    private String transactionId;
-    private LocalDateTime paidAt;
+    
+    
+    private LocalDateTime createdAt;
 }
+
