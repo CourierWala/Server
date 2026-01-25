@@ -19,12 +19,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "payment")
 @AttributeOverride(name = "id", column = @Column(name = "payment_id"))
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor @Builder
+@NoArgsConstructor @AllArgsConstructor @Builder @ToString
 public class Payment extends BaseEntity {
 
     @OneToOne
@@ -48,9 +49,6 @@ public class Payment extends BaseEntity {
  // CREATED, SUCCESS, FAILED
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
-
     
-    
-    private LocalDateTime createdAt;
 }
 

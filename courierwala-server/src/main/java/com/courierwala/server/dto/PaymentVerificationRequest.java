@@ -6,6 +6,7 @@ import lombok.Setter;
 @Setter
 public class PaymentVerificationRequest {
 
+	private Long order_id;
     private String razorpayOrderId;
     private String razorpayPaymentId;
     private String razorpaySignature;
