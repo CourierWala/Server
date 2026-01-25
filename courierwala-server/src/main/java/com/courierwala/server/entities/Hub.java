@@ -19,11 +19,13 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 @Entity
 @Table(name = "hub")
 @AttributeOverride(name = "id", column = @Column(name = "hub_id"))
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+@ToString
 public class Hub extends BaseEntity {
 
     @Column(name = "hub_name", nullable = false, unique = true)  //(hub_name, hub_city, latitude, longitude, manager_id)

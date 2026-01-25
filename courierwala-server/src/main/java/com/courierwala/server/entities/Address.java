@@ -31,6 +31,9 @@ public class Address extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id", nullable = false)
     private City city;
+    
+    private Double latitude;
+    private Double longitude;
 
 
     private Boolean isDefault;
