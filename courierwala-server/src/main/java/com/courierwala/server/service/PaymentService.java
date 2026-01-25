@@ -38,7 +38,7 @@ public class PaymentService {
         options.put("receipt", "receipt_" + System.currentTimeMillis());
 
         Order order = razorpayClient.orders.create(options);
-
+        System.out.println("order:"+order);
         Payment payment = new Payment();
         payment.setRazorpayOrderId(order.get("id"));
         payment.setAmount(amount);
