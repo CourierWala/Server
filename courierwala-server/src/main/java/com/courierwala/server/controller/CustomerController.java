@@ -16,6 +16,7 @@ import com.courierwala.server.customerdto.CustomerProfileDto;
 import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
 import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.ShipmentRequest;
+import com.courierwala.server.customerdto.ShipmentResDto;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.entities.User;
@@ -100,7 +101,7 @@ public class CustomerController {
 	public ResponseEntity<?> createShipment(@Valid @RequestBody ShipmentRequest request) {
 
 		System.out.println("in create shipment !!");
-		ApiResponse shipmentResponce = customerService.createShipment(request);
+		ShipmentResDto shipmentResponce = customerService.createShipment(request);
 		System.out.println("shipemt res : " + shipmentResponce);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(shipmentResponce);

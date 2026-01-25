@@ -5,17 +5,23 @@ import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.courierwala.server.dto.PaymentOrderDTO;
 import com.courierwala.server.dto.PaymentVerificationRequest;
 import com.courierwala.server.entities.Payment;
 import com.courierwala.server.service.PaymentService;
 import com.razorpay.RazorpayException;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
 @RequestMapping("/payments")
 public class PaymentController {
@@ -24,14 +30,17 @@ public class PaymentController {
     private PaymentService paymentService;
 
     @PostMapping("/create")
-    public ResponseEntity<Payment> create(
-            @RequestParam BigDecimal amount)
+    public ResponseEntity<?> create(
+            @RequestParam BigDecimal amount, @RequestParam Long order_id)
             throws RazorpayException {
 
         Payment payment =
-                paymentService.createPaymentOrder(amount);
-
-        return ResponseEntity.ok(payment);
+                paymentService.createPaymentOrder(amount,order_id);
+        PaymentOrderDTO pdto = new PaymentOrderDTO();
+        pdto.setRazorpayOrderId(payment.getRazorpayOrderId());
+        pdto.setAmount(payment.getAmount());
+        System.out.println(payment.toString());
+        return ResponseEntity.status(HttpStatus.CREATED).body(pdto);
     }
     
     @PostMapping("/verify")

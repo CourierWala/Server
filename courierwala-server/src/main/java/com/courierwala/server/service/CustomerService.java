@@ -4,6 +4,7 @@ import com.courierwala.server.customerdto.CustomerProfileDto;
 import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
 import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.ShipmentRequest;
+import com.courierwala.server.customerdto.ShipmentResDto;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.entities.User;
@@ -19,6 +20,6 @@ public interface CustomerService {
 
     void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto);
 
-	ApiResponse createShipment(@Valid ShipmentRequest request);
+	ShipmentResDto createShipment(@Valid ShipmentRequest request);
 
 }

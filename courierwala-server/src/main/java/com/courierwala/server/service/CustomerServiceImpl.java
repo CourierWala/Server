@@ -7,6 +7,7 @@ import com.courierwala.server.customerdto.CustomerProfileDto;
 import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
 import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.ShipmentRequest;
+import com.courierwala.server.customerdto.ShipmentResDto;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.RoutingResult;
@@ -132,7 +133,7 @@ public class CustomerServiceImpl implements CustomerService {
 //	}
 
 	@Override
-	public ApiResponse createShipment(ShipmentRequest req) {
+	public ShipmentResDto createShipment(ShipmentRequest req) {
 
 		User customer = getLoggedInUser();
 
@@ -167,7 +168,7 @@ public class CustomerServiceImpl implements CustomerService {
 			orderHubPathService.savePath(order, routing.getHubPath());
 		}
 		
-		 return new ApiResponse("Shipment created successfully", "success");
+		 return new ShipmentResDto(order.getId(),"Shipment created successfully ","success");
 
 	}		
 
