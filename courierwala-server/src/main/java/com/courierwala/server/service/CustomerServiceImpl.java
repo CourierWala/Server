@@ -1,6 +1,13 @@
 package com.courierwala.server.service;
 
-import com.courierwala.server.customerdto.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.courierwala.server.customerdto.CustomerProfileDto;
+import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
+import com.courierwala.server.customerdto.LoginDTO;
+import com.courierwala.server.customerdto.ShipmentRequest;
+import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.RoutingResult;
 import com.courierwala.server.entities.Address;
@@ -11,15 +18,14 @@ import com.courierwala.server.enumfield.DeliveryType;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.PackageSize;
 import com.courierwala.server.enumfield.PaymentStatus;
-import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
+import com.courierwala.server.repository.AddressRepository;
+import com.courierwala.server.repository.CityRepository;
+import com.courierwala.server.repository.CourierOrderRepository;
 import com.courierwala.server.repository.UserRepository;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,18 +41,17 @@ public class CustomerServiceImpl implements CustomerService {
     private final ShipmentRoutingService shipmentRoutingService;
     private final OrderHubPathService orderHubPathService;
 	
-	public void signUp(SignUpDTO dto) {
-
-		if (customerRepo.existsByEmail(dto.getEmail())) {
-			throw new IllegalStateException("Email already registered");
-		}
-
-		User user = User.builder().name(dto.getName()).email(dto.getEmail()).password(dto.getPassword()) // hash later
-				.phone(dto.getPhone()).role(Role.ROLE_CUSTOMER).status(Status.ACTIVE).build();
-
-		customerRepo.save(user);
-	}
-    private final UserRepository userRepository;
+//	public void signUp(SignUpDTO dto) {
+//
+//		if (customerRepo.existsByEmail(dto.getEmail())) {
+//			throw new IllegalStateException("Email already registered");
+//		}
+//
+//		User user = User.builder().name(dto.getName()).email(dto.getEmail()).password(dto.getPassword()) // hash later
+//				.phone(dto.getPhone()).role(Role.ROLE_CUSTOMER).status(Status.ACTIVE).build();
+//
+//		customerRepo.save(user);
+//	}
 
     // ================= SIGN UP =================
     @Override
@@ -87,44 +92,44 @@ public class CustomerServiceImpl implements CustomerService {
 		return user;
 	}
 
-	@Override
-	public CustomerProfileDto getCustomerProfile(Long customerId) {
-
-		User user = customerRepo.findById(customerId)
-				.orElseThrow(() -> new IllegalStateException("Customer not found"));
-
-//        List<AddressResponse> addressResponses =
-//                user.getAddresses().stream()
-//                        .map(address -> AddressResponse.builder()
-//                                .addressId(address.getId())
-//                                .addressLine(address.getAddressLine())
-//                                .pincode(address.getPincode())
-//                                .cityName(address.getCity().getCityName())
-//                                .isDefault(address.getIsDefault())
-//                                .build()
-//                        ).toList();
+//	@Override
+//	public CustomerProfileDto getCustomerProfile(Long customerId) {
 //
-//        return CustomerProfileDto.builder()
-//                .name(user.getName())
-//                .email(user.getEmail())
-//                .phone(user.getPhone())
-//                .addresses(addressResponses)
-//                .build();
+//		User user = customerRepo.findById(customerId)
+//				.orElseThrow(() -> new IllegalStateException("Customer not found"));
+//
+////        List<AddressResponse> addressResponses =
+////                user.getAddresses().stream()
+////                        .map(address -> AddressResponse.builder()
+////                                .addressId(address.getId())
+////                                .addressLine(address.getAddressLine())
+////                                .pincode(address.getPincode())
+////                                .cityName(address.getCity().getCityName())
+////                                .isDefault(address.getIsDefault())
+////                                .build()
+////                        ).toList();
+////
+////        return CustomerProfileDto.builder()
+////                .name(user.getName())
+////                .email(user.getEmail())
+////                .phone(user.getPhone())
+////                .addresses(addressResponses)
+////                .build();
+//
+//		return null;
+//	}
 
-		return null;
-	}
-
-	@Override
-	public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
-
-		User user = customerRepo.findById(customerId)
-				.orElseThrow(() -> new IllegalStateException("Customer not found"));
-		System.out.println(dto.getName());
-		user.setName(dto.getName());
-		user.setPhone(dto.getPhone());
-
-		customerRepo.save(user);
-	}
+//	@Override
+//	public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
+//
+//		User user = customerRepo.findById(customerId)
+//				.orElseThrow(() -> new IllegalStateException("Customer not found"));
+//		System.out.println(dto.getName());
+//		user.setName(dto.getName());
+//		user.setPhone(dto.getPhone());
+//
+//		customerRepo.save(user);
+//	}
 
 	@Override
 	public ApiResponse createShipment(ShipmentRequest req) {
@@ -161,8 +166,10 @@ public class CustomerServiceImpl implements CustomerService {
 		if (!routing.isDirect()) {
 			orderHubPathService.savePath(order, routing.getHubPath());
 		}
-
 		
+		 return new ApiResponse("Shipment created successfully", "success");
+
+	}		
 
 	/* ---------------- helper methods ---------------- */
 
@@ -190,10 +197,14 @@ public class CustomerServiceImpl implements CustomerService {
 		return userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
 	}
 
-        return new ApiResponse("Shipment created successfully", "success");
-    }
+       
+   
   
   
+
+	
+	
+	
   
    // ================= VIEW PROFILE =================
     @Override
