@@ -18,6 +18,7 @@ import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.service.CustomerService;
 import com.courierwala.server.service.StaffService;
+import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
@@ -71,18 +72,37 @@ public class StaffController {
 	}
 
 	
-//	@PostMapping("/profile/{staffId}")
-//	public String updateStaffProfile(@PathVariable Long staffId) {
-//		try {
-//	        DeliveryStaffProfile profile = staffservice.getStaffProfile(staffId);
-//	        return ResponseEntity.ok(
-//	                new ApiResponse("staff profile fetched successfully", profile)
-//	        );
-//	    } catch (RuntimeException e) {
-//	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-//	                .body(new ApiResponse(e.getMessage(), "Failed"));
-//	    }
-//	}
+	@PostMapping("/profile/{staffId}")
+	public ResponseEntity<ApiResponse> updateStaffProfile( @PathVariable Long staffId, @RequestBody staffProfileResponseDTO dto) {
+
+	    try {
+	        
+	        return ResponseEntity.status(HttpStatus.OK)
+	                .body(staffservice.updateStaffProfile(staffId, dto));
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body(new ApiResponse(e.getMessage(), "Failed"));
+	    }
+	}
+	
+	
+	@PostMapping("/profile/{staffId}/setpassword")
+	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
+	{
+	
+		try {
+	       
+	                
+
+	        return ResponseEntity.status(HttpStatus.OK)
+	                .body(staffservice.changePassword(staffId, dto));
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(),"failed"));
+	    }
+	}
 	
 	@GetMapping("/earnings/{staffid}")
 	public String getCompletedOrdersByStaff() {
