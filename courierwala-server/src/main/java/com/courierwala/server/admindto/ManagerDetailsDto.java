@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ManagerDetailsDto {
 
+    private Long managerId;
     private String managerName;
     private String managerEmail;
     private String hubName;

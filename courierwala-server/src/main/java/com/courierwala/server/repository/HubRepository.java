@@ -12,15 +12,18 @@ import org.springframework.data.jpa.repository.Query;
 public interface HubRepository extends JpaRepository<Hub, Long> {
 
     @Query("""
-    SELECT new com.courierwala.server.admindto.ManagerDetailsDto(
-        u.name,
-        u.email,
-        h.hubName
-    )
-    FROM Hub h
-    JOIN h.manager u
-""")
+                SELECT new com.courierwala.server.admindto.ManagerDetailsDto(
+                    u.id,
+                    u.name,
+                    u.email,
+                    h.hubName
+                )
+                FROM Hub h
+                JOIN h.manager u
+            """)
     List<ManagerDetailsDto> findAllManagerDetails();
+
     Optional<Hub> findByIdAndManagerIsNotNull(Long hubId);
+
 
 }
