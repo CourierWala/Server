@@ -2,6 +2,7 @@ package com.courierwala.server.controller;
 
 import java.util.List;
 
+import com.courierwala.server.admindto.AdminProfileUpdateDto;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import com.courierwala.server.admindto.ManagerUpdateDto;
 import com.courierwala.server.dto.ApiResponse;
@@ -18,6 +19,21 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @PutMapping("/profile/{adminId}")
+    public ResponseEntity<ApiResponse> updateAdminProfile(
+            @PathVariable Long adminId,
+            @RequestBody AdminProfileUpdateDto dto) {
+
+        adminService.updateAdminProfile(adminId, dto);
+
+        return ResponseEntity.ok(
+                new ApiResponse("Profile updated successfully", "SUCCESS")
+        );
+    }
+
+
+
 
     @GetMapping("/managerdetails")
     public List<ManagerDetailsDto> getManagerDetails() {
