@@ -1,5 +1,7 @@
 package com.courierwala.server.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +12,7 @@ import com.courierwala.server.customerdto.ShipmentRequest;
 import com.courierwala.server.customerdto.ShipmentResDto;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.OrderStatusEvent;
 import com.courierwala.server.dto.RoutingResult;
 import com.courierwala.server.entities.Address;
 import com.courierwala.server.entities.City;
@@ -21,6 +24,7 @@ import com.courierwala.server.enumfield.PackageSize;
 import com.courierwala.server.enumfield.PaymentStatus;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
+import com.courierwala.server.events.OrderEventPublisher;
 import com.courierwala.server.repository.AddressRepository;
 import com.courierwala.server.repository.CityRepository;
 import com.courierwala.server.repository.CourierOrderRepository;
@@ -41,6 +45,7 @@ public class CustomerServiceImpl implements CustomerService {
 	private final UserRepository userRepository;
     private final ShipmentRoutingService shipmentRoutingService;
     private final OrderHubPathService orderHubPathService;
+    private final OrderEventPublisher orderEventPublisher;
 	
 //	public void signUp(SignUpDTO dto) {
 //
@@ -168,6 +173,17 @@ public class CustomerServiceImpl implements CustomerService {
 			orderHubPathService.savePath(order, routing.getHubPath());
 		}
 		
+		  //  Publish CREATED event
+	    OrderStatusEvent event = new OrderStatusEvent(
+	        order.getId(),
+	        OrderStatus.CREATED.name(),
+	        customer.getId(),
+	        "Order created",
+	        LocalDateTime.now()
+	    );
+
+	    orderEventPublisher.publishOrderStatusEvent(event);
+		
 		 return new ShipmentResDto(order.getId(),"Shipment created successfully ","success");
 
 	}		
@@ -195,7 +211,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 	private User getLoggedInUser() {
 		// later: SecurityContextHolder
-		return userRepository.findById(1L).orElseThrow(() -> new RuntimeException("User not found"));
+		return userRepository.findById(21L).orElseThrow(() -> new RuntimeException("User not found"));
 	}
 
        
