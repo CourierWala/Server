@@ -11,6 +11,7 @@ public class ShipmentResDto {
 	
 	
 	private Long order_id;
+	private Double amount;
 	private String message;
 	private String status;
 }
