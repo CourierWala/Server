@@ -14,7 +14,7 @@ import com.courierwala.server.service.AdminService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -35,7 +35,7 @@ public class AdminController {
 
 
 
-    @GetMapping("/managerdetails")
+    @GetMapping("/managers")
     public List<ManagerDetailsDto> getManagerDetails() {
         return adminService.getManagerDetails();
     }
