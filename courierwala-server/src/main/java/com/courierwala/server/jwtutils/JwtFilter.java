@@ -32,11 +32,11 @@ public class JwtFilter extends OncePerRequestFilter {
 		try {
 
 			//  1. Skip JWT filter for auth endpoints
-//			String path = request.getServletPath();
-//			if (path.startsWith("/api/auth")) {
-//				chain.doFilter(request, response);
-//				return;
-//			}
+			String path = request.getServletPath();
+			if (path.startsWith("/api/auth")) {
+				chain.doFilter(request, response);
+				return;
+			}
 
 			String token = getTokenFromCookie(request);
 
