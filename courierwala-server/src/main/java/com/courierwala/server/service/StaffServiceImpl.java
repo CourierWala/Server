@@ -59,7 +59,6 @@ public class StaffServiceImpl implements StaffService{
 	            .orElseThrow(() -> new RuntimeException("Hub not found"));
 
 
-
 	    //3 Create User
 	    User user = User.builder()
 	            .name(dto.getName())
@@ -106,10 +105,8 @@ public class StaffServiceImpl implements StaffService{
 	    if (user.getStatus() != Status.ACTIVE) {
 	        throw new IllegalStateException("User account is inactive");
 	    }
-
-	   
+   
 	}
-
 
 	
 	
@@ -189,7 +186,6 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    staffProfile.setVehicleNumber(dto.getVehicleNumber());
 	    
-	    
 	    // Save staffProfile changes
 	    staffRepo.save(staffProfile);
 	    
@@ -233,7 +229,6 @@ public class StaffServiceImpl implements StaffService{
 	    // Save changes
 	    customerRepo.save(user);
 
-	    
 		return new ApiResponse("password updated successfully","success");
 	}
 
@@ -241,10 +236,7 @@ public class StaffServiceImpl implements StaffService{
 	@Override
 	public List<CourierOrderDto> getDashboardOrders() {
 
-	    List<OrderStatus> statuses = List.of(
-	            OrderStatus.CREATED,
-	            OrderStatus.AT_DESTINATION_HUB
-	    );
+	    List<OrderStatus> statuses = List.of(OrderStatus.CREATED, OrderStatus.AT_DESTINATION_HUB );
 
 	    List<CourierOrder> orders = orderRepository.findByOrderStatusIn(statuses);
 
@@ -350,15 +342,13 @@ public class StaffServiceImpl implements StaffService{
 
 	        dtoList.add(dto);
 	    }
-
 	    return dtoList;
 	}
 
 
 	@Override
 	public List<CourierOrderDto> getCurrentOrders(Long staffId) {
-		List<CourierOrder> orders =
-	    		orderRepository.findCurrentOrdersForStaff(staffId);
+		List<CourierOrder> orders = orderRepository.findCurrentOrdersForStaff(staffId);
 
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
@@ -401,7 +391,6 @@ public class StaffServiceImpl implements StaffService{
 
 	        dtoList.add(dto);
 	    }
-
 	    return dtoList;
 	}
 
@@ -456,8 +445,6 @@ public class StaffServiceImpl implements StaffService{
 
 	@Override
 	public void assignHubOrderToStaff(Long staffId, Long orderid) {
-		// TODO Auto-generated method stub
-		
 		
 		// Fetch staff profile
 	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
@@ -504,6 +491,121 @@ public class StaffServiceImpl implements StaffService{
 	    assignmentRepository.save(assignment);
 	    staffRepo.save(staff);
 		
+	}
+
+
+	@Override
+	public ApiResponse pickupAssignedOrder(Long staffId, Long orderId){
+		
+		 // Fetch Order
+	    CourierOrder order = orderRepository.findById(orderId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate Order Status
+	    if (order.getOrderStatus() != OrderStatus.PICKUP_ASSIGNED) {
+	        throw new RuntimeException("Order is not in PICKUP_ASSIGNED state");
+	    }
+
+	    // 3 Fetch Assignment
+	    DeliveryAssignment assignment =
+	            assignmentRepository.findByOrder(order)
+	                    .orElseThrow(() ->
+	                            new RuntimeException("Delivery assignment not found")
+	                    );
+
+	    //  Validate Staff
+	    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+	        throw new RuntimeException("Order not assigned to this staff");
+	    }
+
+	    //  Validate Assignment Status
+	    if (assignment.getDeliveryStatus() != DeliveryStatus.ASSIGNED) {
+	        throw new RuntimeException("Order already picked or invalid state");
+	    }
+
+	    //  Update statuses
+	    order.setOrderStatus(OrderStatus.PICKED_UP);
+	    assignment.setDeliveryStatus(DeliveryStatus.PICKED_UP);
+
+	    //  Save
+	    orderRepository.save(order);
+	    assignmentRepository.save(assignment);
+
+	    return new ApiResponse("Order picked up successfully", "SUCCESS");
+		
+	}
+
+
+	@Override
+	public void completeCustomerPickup(Long staffId, Long orderId) {
+		
+		 CourierOrder order = orderRepository.findById(orderId)
+		            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+		    if (order.getOrderStatus() != OrderStatus.PICKED_UP) {
+		        throw new RuntimeException("Order is not in PICKED_UP state");
+		    }
+
+		    DeliveryAssignment assignment =
+		            assignmentRepository.findByOrderId(orderId)
+		                    .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+		    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+		        throw new RuntimeException("Order not assigned to this staff");
+		    }
+
+		    // Update order status
+		    order.setOrderStatus(OrderStatus.DELIVERED);
+
+		    // Update assignment status 
+		    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+
+		    // Update staff stats
+		    DeliveryStaffProfile staff = assignment.getDeliveryStaff();
+		    staff.setActiveOrders(staff.getActiveOrders() - 1);
+		    staff.setTotalDeliveries(staff.getTotalDeliveries() + 1);
+
+		    orderRepository.save(order);
+		    assignmentRepository.save(assignment);
+		    staffRepo.save(staff);
+		
+	}
+
+
+	@Override
+	public void completeHuborderPickup(Long staffId, Long orderId) {
+	
+		CourierOrder order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+	    if (order.getOrderStatus() != OrderStatus.OUT_FOR_DELIVERY) {
+	        throw new RuntimeException("Order is not in OUT_FOR_DELIVERY state");
+	    }
+
+	    DeliveryAssignment assignment =
+	            assignmentRepository.findByOrderId(orderId)
+	                    .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+	    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+	        throw new RuntimeException("Order not assigned to this staff");
+	    }
+
+	    // Update order status
+	    order.setOrderStatus(OrderStatus.DELIVERED);
+
+	    // Update assignment status 
+	    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+
+	    // Update staff stats
+	    DeliveryStaffProfile staff = assignment.getDeliveryStaff();
+	    staff.setActiveOrders(staff.getActiveOrders() - 1);
+	    staff.setTotalDeliveries(staff.getTotalDeliveries() + 1);
+
+	    orderRepository.save(order);
+	    assignmentRepository.save(assignment);
+	    staffRepo.save(staff);	
 	}
 
 

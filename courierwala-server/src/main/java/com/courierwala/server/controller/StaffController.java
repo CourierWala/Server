@@ -49,11 +49,63 @@ public class StaffController {
 		return "confirmation msg: Order picked up";
 	}
 	
-	@GetMapping("/order/{orderid}")
-	public String getOrderDetails() {
-		//TODO : get complete Order Details of given orderId
-		return "Order Details";
+	
+	
+	@PutMapping("/Current-Orders/Hub/{orderId}")
+	public ResponseEntity<?> markHubOrderDelivered(/*HttpSession session,*/@PathVariable Long orderId )
+	{
+	    try {
+	        Long staffId = (long)1; /*session.getAttribute("staffId");*/
+//	        Long orderId = body.get("orderId");
+
+	        staffservice.completeHuborderPickup(staffId, orderId);
+
+	        return ResponseEntity.ok( new ApiResponse("Order delivered successfully", "SUCCESS"));
+
+	    } catch (RuntimeException e){
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
 	}
+	
+	
+	@PutMapping("/Current-Orders/customer/{orderId}")
+	public ResponseEntity<?> markCustomerOrderDelivered(/*HttpSession session,*/@PathVariable Long orderId )
+	{
+	    try {
+	        Long staffId = (long)1; /*session.getAttribute("staffId");*/
+//	        Long orderId = body.get("orderId");
+	        staffservice.completeCustomerPickup(staffId, orderId);
+
+	        return ResponseEntity.ok(new ApiResponse("Order delivered successfully", "SUCCESS") );
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+
+	
+	@PutMapping("/accepted-orders/{orderId}")
+	public ResponseEntity<?> pickupAssignedOrder( @PathVariable Long orderId /*, HttpSession session*/
+	) {
+	    try {
+	        
+	        Long staffId = (long) 1 /*session.getAttribute("staffId");*/;
+	        
+//	        if (staffId == null) staffId = 1L;
+
+	        ApiResponse response = staffservice.pickupAssignedOrder(staffId, orderId);
+
+	        return ResponseEntity.ok(response);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+
 	
 	
 	@PutMapping("/dashboard/Hub/{orderid}")
@@ -64,11 +116,9 @@ public class StaffController {
 //	        if (staffId == null) {
 //	            throw new RuntimeException("Staff not logged in");
 //	        }
-	    	
-
 	        //Long orderId = body.get("orderId");
 
-	    	Long staffId = (long)2;
+	    	Long staffId = (long)1;
 	    	
 	    	staffservice.assignHubOrderToStaff(staffId, orderid);
 

@@ -54,4 +54,16 @@ public interface StaffService {
 	public void assignHubOrderToStaff(Long staffId, Long orderid);
 
 
+
+	public ApiResponse pickupAssignedOrder(Long staffId, Long orderId);
+
+
+
+	public void completeCustomerPickup(Long staffId, Long orderId);
+
+
+
+	public void completeHuborderPickup(Long staffId, Long orderId);
+
+
 }
