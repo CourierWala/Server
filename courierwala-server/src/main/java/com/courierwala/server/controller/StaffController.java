@@ -1,5 +1,7 @@
 package com.courierwala.server.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,14 +14,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.service.CustomerService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
+import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
@@ -33,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
-public class StaffController {
+public class StaffController {  
 	
 	@Autowired
 	public final StaffService staffservice;
@@ -64,6 +67,51 @@ public class StaffController {
 	
 	//Tested
 	// Returns the profile of Delivery-Staff
+	
+	@GetMapping("/dashboard")
+	public ResponseEntity<?> getAvailableOrders() {
+	    try {
+	        List<CourierOrderDto> orders = staffservice.getDashboardOrders();
+	        return ResponseEntity.ok(orders);
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+	
+	@GetMapping("/accepted-orders")
+	public ResponseEntity<?> getAcceptedOrders(/*HttpSession session*/) {
+	    try {
+	        //Long staffId = (Long) session.getAttribute("staffId");
+	    	Long staffId =  (long) 1;
+	        List<CourierOrderDto> orders =
+	        		staffservice.getAcceptedOrders(staffId);
+
+	        return ResponseEntity.ok(orders);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}	
+	
+	@GetMapping("/current-orders")
+	public ResponseEntity<?> getCurrentOrders(/*HttpSession session*/) {
+	    try {
+	        //Long staffId = (Long) session.getAttribute("staffId");
+	    	Long staffId =  (long) 1;
+	        List<CourierOrderDto> orders =
+	        		staffservice.getCurrentOrders(staffId);
+
+	        return ResponseEntity.ok(orders);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
 	@GetMapping("/profile/{staffId}")
 	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
 	    try {
@@ -98,14 +146,9 @@ public class StaffController {
 	@PostMapping("/profile/{staffId}/setpassword")
 	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
 	{
-	
 		try {
-	       
-	                
-
 	        return ResponseEntity.status(HttpStatus.OK)
 	                .body(staffservice.changePassword(staffId, dto));
-
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));
@@ -121,7 +164,7 @@ public class StaffController {
 
 	
 	
-	@PostMapping("/signup")
+	@PostMapping("/applyforjob")
     public ResponseEntity<?> signUp(
             @Valid @RequestBody StaffSignupDto signupdto){
         try {
@@ -144,10 +187,6 @@ public class StaffController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 		}
-
-         
-
-        
     }
 	
 }
