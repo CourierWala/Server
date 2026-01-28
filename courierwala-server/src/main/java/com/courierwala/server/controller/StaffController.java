@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.service.CustomerService;
@@ -26,9 +26,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/staff")
+@RequestMapping("/api/staff")
 @RequiredArgsConstructor
-public class StaffController {
+public class StaffController {  
 	
 	@Autowired
 	public final StaffService staffservice;
@@ -113,7 +113,7 @@ public class StaffController {
 
 	
 	
-	@PostMapping("/signup")
+	@PostMapping("/applyforjob")
     public ResponseEntity<?> signUp(
             @Valid @RequestBody StaffSignupDto signupdto){
         try {

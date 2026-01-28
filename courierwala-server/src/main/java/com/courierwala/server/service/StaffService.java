@@ -2,8 +2,8 @@ package com.courierwala.server.service;
 
 import org.jspecify.annotations.Nullable;
 
-import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
