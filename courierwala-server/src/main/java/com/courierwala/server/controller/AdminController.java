@@ -5,6 +5,7 @@ import java.util.List;
 import com.courierwala.server.admindto.AdminProfileUpdateDto;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import com.courierwala.server.admindto.ManagerUpdateDto;
+import com.courierwala.server.admindto.PriceChangeDto;
 import com.courierwala.server.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -58,5 +59,24 @@ public class AdminController {
                 )
         );
     }
+
+    @PostMapping("/pricechange")
+    public ResponseEntity<ApiResponse> changePrice(
+            @RequestBody PriceChangeDto dto) {
+
+        adminService.changePrice(dto);
+
+        return ResponseEntity.ok(
+                new ApiResponse("Price updated successfully", "SUCCESS")
+        );
+    }
+
+    @GetMapping("/priceconfig")
+    public ResponseEntity<PriceChangeDto> getPriceConfig() {
+        return ResponseEntity.ok(
+                adminService.getPriceConfig()
+        );
+    }
+
 
 }

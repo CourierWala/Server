@@ -44,6 +44,21 @@ public class SecurityConfig {
 		return http.build();
 	}
 
+//	@Bean
+//	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http
+//				.csrf(csrf -> csrf.disable())
+//				.cors(cors -> {})
+//				.authorizeHttpRequests(auth ->
+//						auth.anyRequest().permitAll()
+//				)
+//				.sessionManagement(session ->
+//						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//				);
+//
+//		return http.build();
+//	}
+
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
