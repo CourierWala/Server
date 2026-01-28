@@ -21,6 +21,6 @@ public class SignUpDTO {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @Pattern(regexp = "\\d{10}", message = "Phone must be 10 digits")
+//    @Pattern(regexp = "\\d{10}", message = "Phone must be 10 digits")
     private String phone;
 }

@@ -1,7 +1,7 @@
 package com.courierwala.server.service;
 
-import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.DeliveryAssignment;
 import com.courierwala.server.entities.DeliveryStaffProfile;
