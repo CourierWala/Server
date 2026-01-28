@@ -47,9 +47,11 @@ public interface StaffService {
 
 
 
-	
+	public void assignOrderToStaff(Long staffId, Long orderid);
 
-	
-	
+
+
+	public void assignHubOrderToStaff(Long staffId, Long orderid);
+
 
 }

@@ -27,6 +27,6 @@ public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssi
 //		          )
 //		    """)
 //		    List<CourierOrder> findAcceptedOrdersForStaff(@Param("staffId") Long staffId);
-
+	boolean existsByOrder(CourierOrder order);
 	
 }

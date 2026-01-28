@@ -7,6 +7,7 @@ import com.courierwala.server.entities.DeliveryAssignment;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
+import com.courierwala.server.enumfield.AssignedBy;
 import com.courierwala.server.enumfield.DeliveryStatus;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.Role;
@@ -402,6 +403,107 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    return dtoList;
+	}
+
+
+	@Override
+	public void assignOrderToStaff(Long staffId, Long orderid) {
+		// TODO Auto-generated method stub
+		
+		
+		
+		// Fetch staff profile
+	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Delivery staff not found")
+	            );
+
+	    //  Fetch order
+	    CourierOrder order = orderRepository.findById(orderid)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate order status
+	    if (order.getOrderStatus() != OrderStatus.CREATED) {
+	        throw new RuntimeException(
+	                "Order is not available for assignment"
+	        );
+	    }
+
+	    //  Prevent duplicate assignment
+	    if (assignmentRepository.existsByOrder(order)) {
+	        throw new RuntimeException("Order already assigned");
+	    }
+
+	    //  Update order status
+	    order.setOrderStatus(OrderStatus.PICKUP_ASSIGNED);
+	    orderRepository.save(order);
+
+	    //  Create delivery assignment
+	    DeliveryAssignment assignment = DeliveryAssignment.builder()
+	            .order(order)
+	            .deliveryStaff(staff)
+	            .manager(staff.getHub().getManager())
+	            .assignedBy(AssignedBy.MANAGER)
+	            .deliveryStatus(DeliveryStatus.ASSIGNED)
+	            .build();
+
+	    assignmentRepository.save(assignment);
+		
+	}
+
+
+	@Override
+	public void assignHubOrderToStaff(Long staffId, Long orderid) {
+		// TODO Auto-generated method stub
+		
+		
+		// Fetch staff profile
+	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Delivery staff not found")
+	            );
+
+	    //  Fetch order
+	    CourierOrder order = orderRepository.findById(orderid)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate order status
+	    if (order.getOrderStatus() != OrderStatus.AT_DESTINATION_HUB){
+	        throw new RuntimeException(
+	                "Order is not available for assignment in hub"
+	        );
+	    }
+
+	    //  Prevent duplicate assignment
+	    if (assignmentRepository.existsByOrder(order)) {
+	        throw new RuntimeException("Order already assigned");
+	    }
+
+	    //  Update order status
+	    order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+	    
+	    //Increment active orders safely
+	    int currentActive = staff.getActiveOrders() != null ? staff.getActiveOrders() : 0;
+
+	    staff.setActiveOrders(currentActive+1);
+	    orderRepository.save(order);
+
+	    //  Create delivery assignment
+	    DeliveryAssignment assignment = DeliveryAssignment.builder()
+	            .order(order)
+	            .deliveryStaff(staff)
+	            .manager(staff.getHub().getManager())
+	            .assignedBy(AssignedBy.MANAGER)
+	            .deliveryStatus(DeliveryStatus.PICKED_UP)
+	            .build();
+
+	    assignmentRepository.save(assignment);
+	    staffRepo.save(staff);
+		
 	}
 
 

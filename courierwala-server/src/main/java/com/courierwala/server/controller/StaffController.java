@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +54,62 @@ public class StaffController {
 		//TODO : get complete Order Details of given orderId
 		return "Order Details";
 	}
+	
+	
+	@PutMapping("/dashboard/Hub/{orderid}")
+	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid /*HttpSession session*/
+	) {
+	    try {
+//	        Long staffId = (Long) session.getAttribute("staffId");
+//	        if (staffId == null) {
+//	            throw new RuntimeException("Staff not logged in");
+//	        }
+	    	
+
+	        //Long orderId = body.get("orderId");
+
+	    	Long staffId = (long)2;
+	    	
+	    	staffservice.assignHubOrderToStaff(staffId, orderid);
+
+	        return ResponseEntity.ok(
+	                new ApiResponse("Hub-Order assigned successfully", "SUCCESS")
+	        );
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+	
+	@PutMapping("/dashboard/customer/{orderid}")
+	public ResponseEntity<?> assignOrder(@PathVariable Long orderid /*HttpSession session*/
+	) {
+	    try {
+//	        Long staffId = (Long) session.getAttribute("staffId");
+//	        if (staffId == null) {
+//	            throw new RuntimeException("Staff not logged in");
+//	        }
+	    	
+
+	        //Long orderId = body.get("orderId");
+
+	    	Long staffId = (long)1;
+	    	
+	    	staffservice.assignOrderToStaff(staffId, orderid);
+
+	        return ResponseEntity.ok(
+	                new ApiResponse("Customer-Order assigned successfully", "SUCCESS")
+	        );
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+
 	
 	@PatchMapping("/order/delivered/{orderid}")
 	public String markAsDelivered() {
