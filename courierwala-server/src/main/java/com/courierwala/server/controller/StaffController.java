@@ -1,5 +1,7 @@
 package com.courierwala.server.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import com.courierwala.server.entities.User;
 import com.courierwala.server.service.CustomerService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
+import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
@@ -57,6 +60,51 @@ public class StaffController {
 		return "confirmation msg: Order Delivered";
 	}
 	
+	
+	@GetMapping("/dashboard")
+	public ResponseEntity<?> getAvailableOrders() {
+	    try {
+	        List<CourierOrderDto> orders = staffservice.getDashboardOrders();
+	        return ResponseEntity.ok(orders);
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+	
+	@GetMapping("/accepted-orders")
+	public ResponseEntity<?> getAcceptedOrders(/*HttpSession session*/) {
+	    try {
+	        //Long staffId = (Long) session.getAttribute("staffId");
+	    	Long staffId =  (long) 1;
+	        List<CourierOrderDto> orders =
+	        		staffservice.getAcceptedOrders(staffId);
+
+	        return ResponseEntity.ok(orders);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}	
+	
+	@GetMapping("/current-orders")
+	public ResponseEntity<?> getCurrentOrders(/*HttpSession session*/) {
+	    try {
+	        //Long staffId = (Long) session.getAttribute("staffId");
+	    	Long staffId =  (long) 1;
+	        List<CourierOrderDto> orders =
+	        		staffservice.getCurrentOrders(staffId);
+
+	        return ResponseEntity.ok(orders);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
 	@GetMapping("/profile/{staffId}")
 	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
 	    try {
@@ -90,14 +138,9 @@ public class StaffController {
 	@PostMapping("/profile/{staffId}/setpassword")
 	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
 	{
-	
 		try {
-	       
-	                
-
 	        return ResponseEntity.status(HttpStatus.OK)
 	                .body(staffservice.changePassword(staffId, dto));
-
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));
@@ -136,10 +179,6 @@ public class StaffController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 		}
-
-         
-
-        
     }
 	
 }

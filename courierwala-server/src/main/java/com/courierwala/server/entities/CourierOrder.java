@@ -65,7 +65,7 @@ public class CourierOrder extends BaseEntity {
     @JoinColumn(name = "current_hub_id")
     private Hub currentHub;
 
-    private double packageWeight;
+    private Double packageWeight;
     private String packageType;
 
     @Enumerated(EnumType.STRING)
