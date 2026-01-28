@@ -13,8 +13,12 @@ import com.courierwala.server.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 

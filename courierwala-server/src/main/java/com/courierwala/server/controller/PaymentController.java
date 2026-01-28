@@ -23,7 +23,7 @@ import com.razorpay.RazorpayException;
 	    allowCredentials = "true"
 	)
 @RestController
-@RequestMapping("/payments")
+@RequestMapping("/api/payments")
 public class PaymentController {
 
     @Autowired
