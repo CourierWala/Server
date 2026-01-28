@@ -163,7 +163,7 @@ public class CustomerServiceImpl implements CustomerService {
 				.distanceKm(routing.getDistanceKm()).packageWeight(req.getWeight())
 				.packageSize(PackageSize.valueOf(req.getPackageSize()))
 				.deliveryType(DeliveryType.valueOf(req.getDeliveryType())).pickupDate(req.getPickupDate())
-				.orderStatus(OrderStatus.AT_SOURCE_HUB)
+				.orderStatus(OrderStatus.CREATED)
 				.paymentStatus(PaymentStatus.PENDING).paymentRequired(true).packageDescription(req.getDescription())
 				.build();
 
