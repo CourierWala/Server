@@ -1,0 +1,16 @@
+package com.courierwala.server.admindto;
+
+import com.courierwala.server.enumfield.Role;
+import com.courierwala.server.enumfield.Status;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class AddManagerDto {
+    private String managerName;
+    private String managerEmail;
+    private String managerPhone;
+    private Role managerRole;
+    private Status managerStatus;
+}

@@ -8,4 +8,5 @@ import lombok.Setter;
 public class ManagerUpdateDto {
     private String name;
     private String email;
+    private String phone;
 }
