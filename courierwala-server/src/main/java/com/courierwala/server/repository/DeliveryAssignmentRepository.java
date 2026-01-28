@@ -1,6 +1,7 @@
 package com.courierwala.server.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.DeliveryAssignment;
+import com.courierwala.server.entities.Hub;
 import com.courierwala.server.enumfield.DeliveryStatus;
 import com.courierwala.server.enumfield.OrderStatus;
 
@@ -27,6 +29,13 @@ public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssi
 //		          )
 //		    """)
 //		    List<CourierOrder> findAcceptedOrdersForStaff(@Param("staffId") Long staffId);
+	boolean existsByOrder(CourierOrder order);
+
+	Optional<DeliveryAssignment> findByOrder(CourierOrder order);
+
+	Optional<DeliveryAssignment> findByOrderId(Long orderId);
+	
+	
 
 	
 }

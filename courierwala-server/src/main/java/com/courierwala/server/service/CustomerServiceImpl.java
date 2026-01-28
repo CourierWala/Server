@@ -96,7 +96,7 @@ public class CustomerServiceImpl implements CustomerService {
 	        LocalDateTime.now()
 	    );
 
-	    orderEventPublisher.publishOrderStatusEvent(event);
+//	    orderEventPublisher.publishOrderStatusEvent(event);
 		
 		 return new ShipmentResDto(order.getId(),"Shipment created successfully ","success");
 
