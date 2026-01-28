@@ -2,21 +2,32 @@ package com.courierwala.server.service;
 
 import com.courierwala.server.customerdto.LoginDTO;
 import com.courierwala.server.dto.ApiResponse;
+import com.courierwala.server.entities.CourierOrder;
+import com.courierwala.server.entities.DeliveryAssignment;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
+import com.courierwala.server.enumfield.DeliveryStatus;
+import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
 import com.courierwala.server.enumfield.VehicleType; // keep ONLY if used
+import com.courierwala.server.repository.CourierOrderRepository;
+import com.courierwala.server.repository.DeliveryAssignmentRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
 import com.courierwala.server.repository.UserRepository;
 import com.courierwala.server.staffdto.ChangePasswordDto;
+import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
 import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +41,8 @@ public class StaffServiceImpl implements StaffService{
 	public final StaffRepository staffRepo;
 	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
+	private final CourierOrderRepository orderRepository;
+	private final DeliveryAssignmentRepository assignmentRepository;
 
 	@Override
 	public void signUp(StaffSignupDto dto) {
@@ -222,6 +235,189 @@ public class StaffServiceImpl implements StaffService{
 	    
 		return new ApiResponse("password updated successfully","success");
 	}
+
+
+	@Override
+	public List<CourierOrderDto> getDashboardOrders() {
+
+	    List<OrderStatus> statuses = List.of(
+	            OrderStatus.CREATED,
+	            OrderStatus.AT_DESTINATION_HUB
+	    );
+
+	    List<CourierOrder> orders = orderRepository.findByOrderStatusIn(statuses);
+
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders) {
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .trackingNumber(order.getTrackingNumber())
+	                .status(order.getOrderStatus())
+
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(
+	                        order.getPickupAddress() != null
+	                                ? order.getPickupAddress().getFullAddress()
+	                                : null
+	                )
+	                .deliveryAddress(
+	                        order.getDeliveryAddress() != null
+	                                ? order.getDeliveryAddress().getFullAddress()
+	                                : null
+	                )
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+
+	    return dtoList;
+	}
+
+
+	@Override
+	public List<CourierOrderDto> getAcceptedOrders(Long staffId) {
+
+	    List<CourierOrder> orders =
+	    		orderRepository.findAcceptedOrdersForStaff(staffId);
+
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders) {
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .trackingNumber(order.getTrackingNumber())
+	                .status(order.getOrderStatus())
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+
+	    return dtoList;
+	}
+
+
+	@Override
+	public List<CourierOrderDto> getCurrentOrders(Long staffId) {
+		List<CourierOrder> orders =
+	    		orderRepository.findCurrentOrdersForStaff(staffId);
+
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders){
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .trackingNumber(order.getTrackingNumber())
+	                .status(order.getOrderStatus())
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+
+	    return dtoList;
+	}
+
+
+
+	
+
+
+
+	
+	
+	
+	
+	
+	
+
+	
 
 
 

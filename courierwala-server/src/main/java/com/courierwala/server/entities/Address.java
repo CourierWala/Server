@@ -13,12 +13,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "address")
 @AttributeOverride(name = "id", column = @Column(name = "address_id"))
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @Builder
+@ToString
 public class Address extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,5 +39,11 @@ public class Address extends BaseEntity {
 
 
     private Boolean isDefault;
+    
+    public String getFullAddress() {
+        String cityName = (city != null) ? city.getCityName() : "";
+        return streetAddress + ", " + cityName;
+    }
+
 }
 
