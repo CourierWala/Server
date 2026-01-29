@@ -41,5 +41,5 @@ public class CourierOrderDto {
     private PackageSize packageSize;
     private DeliveryType deliveryType;
     private Double distanceKm;
-    private BigDecimal price;
+    private Double price;
 }

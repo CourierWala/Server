@@ -18,6 +18,7 @@ import com.courierwala.server.repository.DeliveryAssignmentRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
 import com.courierwala.server.repository.UserRepository;
+import com.courierwala.server.security.CustomUserDetails;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
@@ -29,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,9 +116,10 @@ public class StaffServiceImpl implements StaffService{
 	
 	
 	@Override
-	public staffProfileResponseDTO getStaffProfile(Long staffId) {
+	public staffProfileResponseDTO getStaffProfile() {
+		// staffid
+		Long staffId = getStaffIdFromUserId();
 		
-		//check for staff
 	    DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
@@ -155,7 +159,9 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto) {
+	public ApiResponse updateStaffProfile(staffProfileResponseDTO dto) {
+		
+		Long staffId = getStaffIdFromUserId();
 		
 		//check for email
 		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
@@ -176,7 +182,7 @@ public class StaffServiceImpl implements StaffService{
 	        fullName = dto.getFirstName() + " " + dto.getLastName();
 	    }
 	    user.setName(fullName);
-	    
+	    user.setEmail(dto.getEmail());
 	    // Update phone
 	    user.setPhone(dto.getPhone());
 
@@ -190,9 +196,9 @@ public class StaffServiceImpl implements StaffService{
 	    
 	    // Save staffProfile changes
 	    staffRepo.save(staffProfile);
-	    
+	   
 	 // Fetch updated profile
-	    staffProfileResponseDTO updatedProfile = getStaffProfile(staffId);
+	    staffProfileResponseDTO updatedProfile = getStaffProfile();
 
 	    // Return ApiResponse
 	    return new ApiResponse("staff profile updated successfully", "success");
@@ -207,7 +213,6 @@ public class StaffServiceImpl implements StaffService{
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
 	            );
-
 	    User user = staffProfile.getUser();
 	    
 	    // Role validation
@@ -216,7 +221,7 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    // Validate current password
-	    if (!(pass.matches(dto.getCurrentPassword(), user.getPassword())  ) ) {
+	    if (!(pass.matches(dto.getCurrentPassword(), user.getPassword()))){
 	        throw new RuntimeException("Current password is incorrect "+user.getPassword()+ ""+ dto.getCurrentPassword());
 	    }
 
@@ -226,11 +231,11 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    
 	 // Update password 
-	    user.setPassword(dto.getNewPassword());
+	    user.setPassword(pass.encode(dto.getNewPassword()) );
 
+	    
 	    // Save changes
 	    customerRepo.save(user);
-
 		return new ApiResponse("password updated successfully","success");
 	}
 
@@ -403,7 +408,6 @@ public class StaffServiceImpl implements StaffService{
 	@Override
 	public void assignOrderToStaff(Long staffId, Long orderid) {
 		// TODO Auto-generated method stub
-		
 		
 		
 		// Fetch staff profile
@@ -614,8 +618,26 @@ public class StaffServiceImpl implements StaffService{
 	}
 
 
-
 	
+	public  Long getStaffIdFromUserId(){
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !authentication.isAuthenticated()) {
+	        throw new RuntimeException("User not authenticated");
+	    }
+		
+	    Object principal = authentication.getPrincipal();
+	    if (!(principal instanceof CustomUserDetails)) {
+	        	throw new RuntimeException("Invalid authentication principal");
+	    }
+
+		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        DeliveryStaffProfile staff = staffRepo.findByUser_Id(user.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Delivery staff profile not found"));
+        return staff.getId();
+    }
 
 
 

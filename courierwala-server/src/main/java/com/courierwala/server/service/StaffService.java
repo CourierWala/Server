@@ -27,11 +27,11 @@ public interface StaffService {
 
 
 
-	public staffProfileResponseDTO getStaffProfile(Long staffId);
+	public staffProfileResponseDTO getStaffProfile();
 
 
 
-	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto);
+	public ApiResponse updateStaffProfile( staffProfileResponseDTO dto);
 
 
 

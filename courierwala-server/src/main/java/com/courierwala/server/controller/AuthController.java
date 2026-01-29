@@ -46,15 +46,7 @@ public class AuthController {
 
 		System.out.println("In login !!");
 		return ResponseEntity.ok(res);
-//    	try {
-//        
-//    	}
-//    	
-//    	catch (BadCredentialsException ex) {
-//            return ResponseEntity
-//                    .status(HttpStatus.UNAUTHORIZED)
-//                    .body(Map.of("message", "Invalid email or password"));
-//        }
+
 	}
 
 }

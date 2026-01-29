@@ -45,6 +45,7 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .phone(dto.getPhone())
                 .role(Role.ROLE_CUSTOMER)
+
                 .status(Status.ACTIVE)
                 .build();
 
@@ -57,6 +58,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResDTO login(LoginDTO loginDTO, HttpServletResponse response) {
 
+    	System.out.println("in login !!");
         // 1️ Authenticate user (email + password)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

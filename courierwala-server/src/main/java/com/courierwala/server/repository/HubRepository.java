@@ -16,6 +16,9 @@ public interface HubRepository extends JpaRepository<Hub, Long> {
                     u.id,
                     u.name,
                     u.email,
+                    u.phone,
+                    u.role,
+                    u.status,
                     h.hubName
                 )
                 FROM Hub h

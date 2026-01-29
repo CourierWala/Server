@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,10 @@ import com.courierwala.server.staffdto.staffProfileResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
@@ -36,6 +41,23 @@ public class StaffController {
 	
 	@Autowired
 	public final StaffService staffservice;
+
+
+//
+//	@GetMapping("/{staffid}")
+//	public String getAllOrdersByStaff() {
+//		//TODO : create a responce = list of all orders with status in_transit and staffid = staffid 
+//		return "orderList";
+//	}
+	
+	@PatchMapping("/order/pickup/{orderid}")
+	public String pickUpOrder() {
+		//TODO : upadate order status to Out_For_Delivery of order with orderid 
+		return "confirmation msg: Order picked up";
+	}
+	
+	
+	
 
 	@PutMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(/*HttpSession session,*/@PathVariable Long orderId )
@@ -91,9 +113,6 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
-
-	
-	
 	@PutMapping("/dashboard/Hub/{orderid}")
 	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid /*HttpSession session*/
 	) {
@@ -127,9 +146,6 @@ public class StaffController {
 //	        if (staffId == null) {
 //	            throw new RuntimeException("Staff not logged in");
 //	        }
-	    	
-
-	        //Long orderId = body.get("orderId");
 
 	    	Long staffId = (long)1;
 	    	
@@ -153,6 +169,9 @@ public class StaffController {
 		return "confirmation msg: Order Delivered";
 	}
 	
+
+	//Tested
+	// Returns the profile of Delivery-Staff
 	
 	@GetMapping("/dashboard")
 	public ResponseEntity<?> getAvailableOrders() {
@@ -199,11 +218,12 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
-	@GetMapping("/profile/{staffId}")
-	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
+
+	@GetMapping("/profile")
+	public ResponseEntity<?> getStaffProfile() {
 	    try {
 	        staffProfileResponseDTO response =
-	                staffservice.getStaffProfile(staffId);
+	                staffservice.getStaffProfile();
 
 	        return ResponseEntity.status(HttpStatus.OK).body(response);
 	               
@@ -213,14 +233,15 @@ public class StaffController {
 	    }
 	}
 
-	
-	@PostMapping("/profile/{staffId}")
-	public ResponseEntity<ApiResponse> updateStaffProfile( @PathVariable Long staffId, @RequestBody staffProfileResponseDTO dto) {
+	//Tested
+	// Returns the Conformation msg if updated successfully
+	@PostMapping("/profile")
+	public ResponseEntity<ApiResponse> updateStaffProfile( @RequestBody staffProfileResponseDTO dto) {
 
 	    try {
 	        
 	        return ResponseEntity.status(HttpStatus.OK)
-	                .body(staffservice.updateStaffProfile(staffId, dto));
+	                .body(staffservice.updateStaffProfile(dto));
 
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -235,6 +256,7 @@ public class StaffController {
 		try {
 	        return ResponseEntity.status(HttpStatus.OK)
 	                .body(staffservice.changePassword(staffId, dto));
+
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));
@@ -246,9 +268,6 @@ public class StaffController {
 		//TODO : create a responce = list of all orders with status in_transit and staffid = staffid 
 		return "orderList";
 	}
-	
-
-	
 	
 	@PostMapping("/applyforjob")
     public ResponseEntity<?> signUp(
@@ -262,6 +281,8 @@ public class StaffController {
 		}
     }
 	
+
+
 
 	
 }
