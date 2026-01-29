@@ -137,4 +137,21 @@ public class AdminServiceImpl implements AdminService {
 
         return hubDetails;
     }
+
+    public AdminProfileUpdateDto getAdminProfile(Long adminId) {
+
+        User user = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 🔐 Ensure this user is ADMIN
+        if (user.getRole() != Role.ROLE_ADMIN) {
+            throw new RuntimeException("Access denied: Not an admin");
+        }
+
+        AdminProfileUpdateDto dto = new AdminProfileUpdateDto();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+
+        return dto;
+    }
 }
