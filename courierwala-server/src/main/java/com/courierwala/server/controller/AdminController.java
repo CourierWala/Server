@@ -6,6 +6,7 @@ import com.courierwala.server.admindto.AddManagerDto;
 import com.courierwala.server.admindto.AdminProfileUpdateDto;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import com.courierwala.server.admindto.ManagerUpdateDto;
+import com.courierwala.server.admindto.PriceChangeDto;
 import com.courierwala.server.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,10 @@ import com.courierwala.server.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -59,5 +64,24 @@ public class AdminController {
         adminService.addManager(manager);
         return ResponseEntity.ok(new ApiResponse("Manager added successfully", "SUCCESS"));
     }
+
+    @PostMapping("/pricechange")
+    public ResponseEntity<ApiResponse> changePrice(
+            @RequestBody PriceChangeDto dto) {
+
+        adminService.changePrice(dto);
+
+        return ResponseEntity.ok(
+                new ApiResponse("Price updated successfully", "SUCCESS")
+        );
+    }
+
+    @GetMapping("/priceconfig")
+    public ResponseEntity<PriceChangeDto> getPriceConfig() {
+        return ResponseEntity.ok(
+                adminService.getPriceConfig()
+        );
+    }
+
 
 }

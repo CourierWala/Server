@@ -75,7 +75,7 @@ public class CourierOrder extends BaseEntity {
     private PackageSize packageSize;
 
     private Double distanceKm;
-    private BigDecimal price;
+    private Double price;
 
     private LocalDate pickupDate;
 

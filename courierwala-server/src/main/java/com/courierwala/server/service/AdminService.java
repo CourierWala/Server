@@ -4,6 +4,7 @@ import com.courierwala.server.admindto.AddManagerDto;
 import com.courierwala.server.admindto.AdminProfileUpdateDto;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import com.courierwala.server.admindto.ManagerUpdateDto;
+import com.courierwala.server.admindto.PriceChangeDto;
 
 import java.util.List;
 
@@ -15,4 +16,13 @@ public interface AdminService {
     void updateAdminProfile(Long adminId, AdminProfileUpdateDto dto);
 
     void addManager(AddManagerDto manager);
+  
+    void updateAdminProfile(Long adminId, AdminProfileUpdateDto dto);
+    void changePrice(PriceChangeDto dto);
+    PriceChangeDto getPriceConfig();
+
+
+
 }
+
+

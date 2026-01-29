@@ -1,31 +1,24 @@
 package com.courierwala.server.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.courierwala.server.customerdto.*;
+import com.courierwala.server.entities.*;
+import com.courierwala.server.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.courierwala.server.customerdto.CustomerProfileDto;
-import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
-import com.courierwala.server.customerdto.ShipmentRequest;
-import com.courierwala.server.customerdto.ShipmentResDto;
 import com.courierwala.server.dto.OrderStatusEvent;
 import com.courierwala.server.dto.RoutingResult;
-import com.courierwala.server.entities.Address;
-import com.courierwala.server.entities.City;
-import com.courierwala.server.entities.CourierOrder;
-import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.DeliveryType;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.PackageSize;
 import com.courierwala.server.enumfield.PaymentStatus;
 import com.courierwala.server.events.OrderEventPublisher;
-import com.courierwala.server.repository.AddressRepository;
-import com.courierwala.server.repository.CityRepository;
-import com.courierwala.server.repository.CourierOrderRepository;
-import com.courierwala.server.repository.UserRepository;
 import com.courierwala.server.security.CustomUserDetails;
 
 import lombok.RequiredArgsConstructor;
@@ -43,18 +36,18 @@ public class CustomerServiceImpl implements CustomerService {
     private final ShipmentRoutingService shipmentRoutingService;
     private final OrderHubPathService orderHubPathService;
     private final OrderEventPublisher orderEventPublisher;
-	
+	private final PricingConfigRepository pricingConfigRepository;
 
 
 	@Override
 	public ShipmentResDto createShipment(ShipmentRequest req) {
 
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		
-		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-				                 
-        System.out.println("role : " + user.getAuthorities());
-		User customer = getLoggedInUser(user.getId());
+//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+//
+//        System.out.println("role : " + user.getAuthorities());
+		User customer = getLoggedInUser(3L);
 
 		City pickupCity = getOrCreateCity(req.getPickupCity());
 		City deliveryCity = getOrCreateCity(req.getDeliveryCity());
@@ -68,10 +61,19 @@ public class CustomerServiceImpl implements CustomerService {
 		System.out.println("before calling ===========================================================================");
 		RoutingResult routing = shipmentRoutingService.decideRouting(req.getPickupLatitude(), req.getPickupLongitude(),
 				req.getDeliveryLatitude(), req.getDeliveryLongitude());
-		
+
 		System.out.println("after calling ======================================================================");
 
-		CourierOrder order = CourierOrder.builder().trackingNumber(generateTrackingNumber()).customer(customer)
+		PricingConfig pricing = pricingConfigRepository.findAll()
+				.stream()
+				.findFirst()
+				.orElseThrow(() ->
+						new RuntimeException("Pricing config not found"));
+
+
+		Double pri=pricing.getBasePrice()+(req.getWeight()*pricing.getPricePerKg())+(pricing.getPricePerKm()*routing.getDistanceKm());
+		System.out.println(pri);
+		CourierOrder order = CourierOrder.builder().price(pri).trackingNumber(generateTrackingNumber()).customer(customer)
 				.pickupAddress(pickupAddress).deliveryAddress(deliveryAddress).sourceHub(routing.getSourceHub())
 				.destinationHub(routing.getDestinationHub()).currentHub(routing.getSourceHub())
 				.distanceKm(routing.getDistanceKm()).packageWeight(req.getWeight())
@@ -96,9 +98,9 @@ public class CustomerServiceImpl implements CustomerService {
 	        LocalDateTime.now()
 	    );
 
-	    orderEventPublisher.publishOrderStatusEvent(event);
+//	    orderEventPublisher.publishOrderStatusEvent(event);
 		
-		 return new ShipmentResDto(order.getId(),"Shipment created successfully ","success");
+		 return new ShipmentResDto(order.getId(),pri,"Shipment created successfully ","success");
 
 	}		
 
@@ -165,5 +167,26 @@ public class CustomerServiceImpl implements CustomerService {
 
         userRepository.save(user);
     }
+
+	@Override
+	public List<ShipmentSummaryDto> getAllMyShipments() {
+
+		// TEMP: using fixed customer (same as createShipment)
+		User customer = getLoggedInUser(3L);
+
+		return courierOrderRepository
+				.findByCustomerOrderByCreatedAtDesc(customer)
+				.stream()
+				.map(order -> new ShipmentSummaryDto(
+						order.getId(),
+						order.getTrackingNumber(),
+						order.getPickupAddress().getCity().getCityName(),
+						order.getDeliveryAddress().getCity().getCityName(),
+						order.getOrderStatus(),
+						order.getPrice(),
+						order.getPickupDate()
+				))
+				.toList();
+	}
 
 }
