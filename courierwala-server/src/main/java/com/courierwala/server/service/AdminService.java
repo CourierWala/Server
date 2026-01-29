@@ -18,6 +18,8 @@ public interface AdminService {
 
     List<HubDetailsDto> getAllHubs();
 
+    AdminProfileUpdateDto getAdminProfile(Long adminId);
+
 }
 
 
