@@ -128,6 +128,8 @@ public class AdminServiceImpl implements AdminService {
                     .hubCity(hub.getHubCity())
                     .managerId(hub.getManager().getId())
                     .managerName(hub.getManager().getName())
+                    .managerEmail(hub.getManager().getEmail())
+                    .managerPhone(hub.getManager().getPhone())
                     .build();
 
             hubDetails.add(dto);
