@@ -35,6 +35,7 @@ public class AdminController {
     }
 
 
+
     @GetMapping("/managers")
     public List<ManagerDetailsDto> getManagerDetails() {
         return adminService.getManagerDetails();
@@ -85,5 +86,15 @@ public class AdminController {
         allHubs.forEach(System.out::println);
         return adminService.getAllHubs();
     }
+
+    @GetMapping("/profile/{adminId}")
+    public ResponseEntity<AdminProfileUpdateDto> getAdminProfile(
+            @PathVariable Long adminId) {
+
+        AdminProfileUpdateDto dto = adminService.getAdminProfile(adminId);
+
+        return ResponseEntity.ok(dto);
+    }
+
 
 }
