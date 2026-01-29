@@ -37,20 +37,6 @@ public class StaffController {
 	@Autowired
 	public final StaffService staffservice;
 
-	@GetMapping("/{staffid}")
-	public String getAllOrdersByStaff() {
-		//TODO : create a responce = list of all orders with status in_transit and staffid = staffid 
-		return "orderList";
-	}
-	
-	@PatchMapping("/order/pickup/{orderid}")
-	public String pickUpOrder() {
-		//TODO : upadate order status to Out_For_Delivery of order with orderid 
-		return "confirmation msg: Order picked up";
-	}
-	
-	
-	
 	@PutMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(/*HttpSession session,*/@PathVariable Long orderId )
 	{
@@ -172,6 +158,7 @@ public class StaffController {
 	public ResponseEntity<?> getAvailableOrders() {
 	    try {
 	        List<CourierOrderDto> orders = staffservice.getDashboardOrders();
+	        System.out.println("call");
 	        return ResponseEntity.ok(orders);
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -179,11 +166,11 @@ public class StaffController {
 	    }
 	}
 	
-	@GetMapping("/accepted-orders")
-	public ResponseEntity<?> getAcceptedOrders(/*HttpSession session*/) {
+	@GetMapping("/accepted-orders/{staffId}")
+	public ResponseEntity<?> getAcceptedOrders(/*HttpSession session*/ @PathVariable Long staffId ) {
 	    try {
 	        //Long staffId = (Long) session.getAttribute("staffId");
-	    	Long staffId =  (long) 1;
+//	    	Long staffId =  (long) 1;
 	        List<CourierOrderDto> orders =
 	        		staffservice.getAcceptedOrders(staffId);
 
@@ -196,11 +183,11 @@ public class StaffController {
 	    }
 	}	
 	
-	@GetMapping("/current-orders")
-	public ResponseEntity<?> getCurrentOrders(/*HttpSession session*/) {
+	@GetMapping("/current-orders/{staffId}")
+	public ResponseEntity<?> getCurrentOrders(/*HttpSession session*/ @PathVariable Long staffId ) {
 	    try {
 	        //Long staffId = (Long) session.getAttribute("staffId");
-	    	Long staffId =  (long) 1;
+	    	//Long staffId =  (long) 1;
 	        List<CourierOrderDto> orders =
 	        		staffservice.getCurrentOrders(staffId);
 
@@ -242,7 +229,7 @@ public class StaffController {
 	}
 	
 	
-	@PostMapping("/profile/{staffId}/setpassword")
+	@PostMapping("/profile/changepassword/{staffId}")
 	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
 	{
 		try {
@@ -275,17 +262,6 @@ public class StaffController {
 		}
     }
 	
-	@PostMapping("/login")
-    public ResponseEntity<?> login(
-            @Valid @RequestBody LoginDTO loginDTO) {
-		
-		try {
-			staffservice.login(loginDTO);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse("login sucessfully", "success"));
-		} catch (RuntimeException e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(new ApiResponse(e.getMessage(), "Failed"));
-		}
-    }
+
 	
 }

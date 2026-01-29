@@ -25,6 +25,7 @@ public class SecurityConfig {
 
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		
 		http.csrf(csrf -> csrf.disable())
 		         .cors(cors -> {})
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
@@ -40,9 +41,11 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		
 
 		return http.build();
 	}
+	
 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
