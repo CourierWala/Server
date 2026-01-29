@@ -172,6 +172,7 @@ public class StaffController {
 		return "confirmation msg: Order Delivered";
 	}
 	
+
 	//Tested
 	// Returns the profile of Delivery-Staff
 	
@@ -219,6 +220,7 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
+
 	@GetMapping("/profile/{staffId}")
 	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
 	    try {
@@ -253,9 +255,14 @@ public class StaffController {
 	@PostMapping("/profile/{staffId}/setpassword")
 	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
 	{
+	
 		try {
+	       
+	                
+
 	        return ResponseEntity.status(HttpStatus.OK)
 	                .body(staffservice.changePassword(staffId, dto));
+
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));
@@ -294,6 +301,10 @@ public class StaffController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 		}
+
+         
+
+        
     }
 	
 }

@@ -1,5 +1,6 @@
 package com.courierwala.server.security;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,7 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import com.courierwala.server.config.CorsConfig;
 import com.courierwala.server.jwtutils.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -19,30 +20,39 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CorsConfig corsConfig;
+
 	private final JwtFilter jwtFilter;
 	private final CustomAccessDeniedHandler accessDeniedHandler;
 	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
+  
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
-		         .cors(cors -> {})
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
-						.permitAll()
-						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
-					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
-						.anyRequest().authenticated())
-				        .exceptionHandling(ex -> ex
-		                .accessDeniedHandler(accessDeniedHandler)        // 403
-		                .authenticationEntryPoint(authenticationEntryPoint) // 401
-		            )
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+	    http
+	        .csrf(csrf -> csrf.disable())
+	        .cors(cors -> {})
+	        .sessionManagement(session ->
+	            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+	        )
+	        .exceptionHandling(ex -> ex
+	            .authenticationEntryPoint(authenticationEntryPoint) // 401
+	            .accessDeniedHandler(accessDeniedHandler)            // 403
+	        )
+	        .authorizeHttpRequests(auth -> auth
+	            .requestMatchers("/api/auth/**", "/api/staff/applyforjob").permitAll()
+	            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+	            .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+	            .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
+	            .anyRequest().authenticated()
+	        );
 
-		return http.build();
+	    http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+	    return http.build();
 	}
+
 
 //	@Bean
 //	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

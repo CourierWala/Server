@@ -100,7 +100,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 //	    orderEventPublisher.publishOrderStatusEvent(event);
 		
-		 return new ShipmentResDto(order.getId(),pri,"Shipment created successfully ","success");
+		 return new ShipmentResDto(order.getId(),pri ,"Shipment created successfully ","success");
 
 	}		
 

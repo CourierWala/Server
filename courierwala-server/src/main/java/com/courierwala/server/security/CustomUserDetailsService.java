@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.exception.ResourceNotFoundException;
 import com.courierwala.server.repository.UserRepository;
-import com.courierwala.server.security.CustomUserDetails;
 
 //import com.security.utils.CustomUserDetails;
 

@@ -71,6 +71,7 @@ public class CustomerController {
 
     @GetMapping("/shipments")
     public ResponseEntity<List<ShipmentSummaryDto>> getAllMyShipments() {
+    	System.out.println("in shipments !!");
         return ResponseEntity.ok(
                 customerService.getAllMyShipments()
         );
