@@ -2,6 +2,7 @@ package com.courierwala.server.controller;
 
 import java.util.List;
 
+import com.courierwala.server.admindto.AddManagerDto;
 import com.courierwala.server.admindto.AdminProfileUpdateDto;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import com.courierwala.server.admindto.ManagerUpdateDto;
@@ -38,19 +39,17 @@ public class AdminController {
     }
 
 
-
-
-    @GetMapping("/managerdetails")
+    @GetMapping("/managers")
     public List<ManagerDetailsDto> getManagerDetails() {
         return adminService.getManagerDetails();
     }
 
-    @PutMapping("/hubs/{hubId}/manager")
+    @PutMapping("/manager/{managerId}")
     public ResponseEntity<ApiResponse> updateManagerDetails(
-            @PathVariable Long hubId,
+            @PathVariable Long managerId,
             @RequestBody ManagerUpdateDto dto) {
 
-        adminService.updateManagerDetails(hubId, dto);
+        adminService.updateManagerDetails(managerId, dto);
 
         return ResponseEntity.ok(
                 new ApiResponse(
@@ -58,6 +57,12 @@ public class AdminController {
                         "SUCCESS"
                 )
         );
+    }
+
+    @PostMapping("/manager")
+    public ResponseEntity<ApiResponse> addManager(@RequestBody AddManagerDto manager) {
+        adminService.addManager(manager);
+        return ResponseEntity.ok(new ApiResponse("Manager added successfully", "SUCCESS"));
     }
 
     @PostMapping("/pricechange")
