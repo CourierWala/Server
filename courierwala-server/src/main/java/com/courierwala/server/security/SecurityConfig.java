@@ -29,29 +29,29 @@ public class SecurityConfig {
   
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+staff_controller
+		
+		http.csrf(csrf -> csrf.disable())
+		         .cors(cors -> {})
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
+						.permitAll()
+						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
+						.anyRequest().authenticated())
+				        .exceptionHandling(ex -> ex
+		                .accessDeniedHandler(accessDeniedHandler)        // 403
+		                .authenticationEntryPoint(authenticationEntryPoint) // 401
+		            )
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-	    http
-	        .csrf(csrf -> csrf.disable())
-	        .cors(cors -> {})
-	        .sessionManagement(session ->
-	            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-	        )
-	        .exceptionHandling(ex -> ex
-	            .authenticationEntryPoint(authenticationEntryPoint) // 401
-	            .accessDeniedHandler(accessDeniedHandler)            // 403
-	        )
-	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers("/api/auth/**", "/api/staff/applyforjob").permitAll()
-	            .requestMatchers("/api/admin/**").hasRole("ADMIN")
-	            .requestMatchers("/api/customer/**").hasRole("CUSTOMER")
-	            .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
-	            .anyRequest().authenticated()
-	        );
+		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		
 
-	    http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		return http.build();
 
-	    return http.build();
 	}
+	
 
 
 //	@Bean

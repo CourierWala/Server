@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,12 +39,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StaffServiceImpl implements StaffService{
 	
-	
+	private final PasswordEncoder passwordEncoder;
 	public final StaffRepository staffRepo;
 	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
 	private final CourierOrderRepository orderRepository;
 	private final DeliveryAssignmentRepository assignmentRepository;
+	private final PasswordEncoder pass;
 
 	@Override
 	public void signUp(StaffSignupDto dto) {
@@ -63,7 +65,7 @@ public class StaffServiceImpl implements StaffService{
 	    User user = User.builder()
 	            .name(dto.getName())
 	            .email(dto.getEmail())
-	            .password(dto.getPassword()) // hash later
+	            .password(passwordEncoder.encode(dto.getPassword())) // hash later
 	            .phone(dto.getPhone())
 	            .role(Role.ROLE_DELIVERY_STAFF)
 	            .status(Status.ACTIVE)
@@ -214,8 +216,8 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    // Validate current password
-	    if (!user.getPassword().equals(dto.getCurrentPassword())) {
-	        throw new RuntimeException("Current password is incorrect");
+	    if (!(pass.matches(dto.getCurrentPassword(), user.getPassword())  ) ) {
+	        throw new RuntimeException("Current password is incorrect "+user.getPassword()+ ""+ dto.getCurrentPassword());
 	    }
 
 	    //  Validate new and confirm password
@@ -246,6 +248,7 @@ public class StaffServiceImpl implements StaffService{
 
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
 
 	                // CUSTOMER
@@ -307,6 +310,7 @@ public class StaffServiceImpl implements StaffService{
 
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
@@ -356,6 +360,7 @@ public class StaffServiceImpl implements StaffService{
 
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
@@ -557,7 +562,7 @@ public class StaffServiceImpl implements StaffService{
 		    }
 
 		    // Update order status
-		    order.setOrderStatus(OrderStatus.DELIVERED);
+		    order.setOrderStatus(OrderStatus.AT_SOURCE_HUB);
 
 		    // Update assignment status 
 		    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
