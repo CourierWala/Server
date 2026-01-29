@@ -2,6 +2,7 @@ package com.courierwala.server.repository;
 
 import java.util.List;
 
+import com.courierwala.server.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +49,7 @@ public interface CourierOrderRepository extends JpaRepository<CourierOrder, Long
 	          )
 	    """)
 	List<CourierOrder> findCurrentOrdersForStaff(Long staffId);
+
+	List<CourierOrder> findByCustomerOrderByCreatedAtDesc(User customer);
+
 }

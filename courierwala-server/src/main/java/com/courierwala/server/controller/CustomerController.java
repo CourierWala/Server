@@ -1,6 +1,7 @@
 package com.courierwala.server.controller;
 
 
+import com.courierwala.server.customerdto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,11 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.CustomerProfileDto;
-import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
-import com.courierwala.server.customerdto.ShipmentRequest;
-import com.courierwala.server.customerdto.ShipmentResDto;
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.User;
@@ -24,6 +20,8 @@ import com.courierwala.server.service.CustomerService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 @CrossOrigin(
 	    origins = "http://localhost:5173",
@@ -58,7 +56,7 @@ public class CustomerController {
         return ResponseEntity.ok(
                 new ApiResponse("Customer profile updated successfully", "success"));
     }
-  
+
   
   	@PostMapping("/shipments")
 	public ResponseEntity<?> createShipment(@Valid @RequestBody ShipmentRequest request) {
@@ -69,4 +67,13 @@ public class CustomerController {
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(shipmentResponce);
 	}
+
+
+    @GetMapping("/shipments")
+    public ResponseEntity<List<ShipmentSummaryDto>> getAllMyShipments() {
+    	System.out.println("in shipments !!");
+        return ResponseEntity.ok(
+                customerService.getAllMyShipments()
+        );
+    }
 }

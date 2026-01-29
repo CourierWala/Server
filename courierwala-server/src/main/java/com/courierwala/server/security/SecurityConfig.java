@@ -37,7 +37,7 @@ public class SecurityConfig {
 	            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 	        )
 	        .exceptionHandling(ex -> ex
-//	            .authenticationEntryPoint(authenticationEntryPoint) // 401
+	            .authenticationEntryPoint(authenticationEntryPoint) // 401
 	            .accessDeniedHandler(accessDeniedHandler)            // 403
 	        )
 	        .authorizeHttpRequests(auth -> auth
@@ -53,6 +53,21 @@ public class SecurityConfig {
 	    return http.build();
 	}
 
+
+//	@Bean
+//	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http
+//				.csrf(csrf -> csrf.disable())
+//				.cors(cors -> {})
+//				.authorizeHttpRequests(auth ->
+//						auth.anyRequest().permitAll()
+//				)
+//				.sessionManagement(session ->
+//						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//				);
+//
+//		return http.build();
+//	}
 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
