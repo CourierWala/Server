@@ -2,9 +2,7 @@ package com.courierwala.server.controller;
 
 import java.util.List;
 
-import com.courierwala.server.admindto.AdminProfileUpdateDto;
-import com.courierwala.server.admindto.ManagerDetailsDto;
-import com.courierwala.server.admindto.ManagerUpdateDto;
+import com.courierwala.server.admindto.*;
 import com.courierwala.server.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +11,12 @@ import com.courierwala.server.service.AdminService;
 
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -33,19 +35,17 @@ public class AdminController {
     }
 
 
-
-
-    @GetMapping("/managerdetails")
+    @GetMapping("/managers")
     public List<ManagerDetailsDto> getManagerDetails() {
         return adminService.getManagerDetails();
     }
 
-    @PutMapping("/hubs/{hubId}/manager")
+    @PutMapping("/manager/{managerId}")
     public ResponseEntity<ApiResponse> updateManagerDetails(
-            @PathVariable Long hubId,
+            @PathVariable Long managerId,
             @RequestBody ManagerUpdateDto dto) {
 
-        adminService.updateManagerDetails(hubId, dto);
+        adminService.updateManagerDetails(managerId, dto);
 
         return ResponseEntity.ok(
                 new ApiResponse(
@@ -53,6 +53,37 @@ public class AdminController {
                         "SUCCESS"
                 )
         );
+    }
+
+    @PostMapping("/manager")
+    public ResponseEntity<ApiResponse> addManager(@RequestBody AddManagerDto manager) {
+        adminService.addManager(manager);
+        return ResponseEntity.ok(new ApiResponse("Manager added successfully", "SUCCESS"));
+    }
+
+    @PostMapping("/pricechange")
+    public ResponseEntity<ApiResponse> changePrice(
+            @RequestBody PriceChangeDto dto) {
+
+        adminService.changePrice(dto);
+
+        return ResponseEntity.ok(
+                new ApiResponse("Price updated successfully", "SUCCESS")
+        );
+    }
+
+    @GetMapping("/priceconfig")
+    public ResponseEntity<PriceChangeDto> getPriceConfig() {
+        return ResponseEntity.ok(
+                adminService.getPriceConfig()
+        );
+    }
+
+    @GetMapping("/hubs")
+    public List<HubDetailsDto> getAllHubs(){
+        List<HubDetailsDto> allHubs = adminService.getAllHubs();
+        allHubs.forEach(System.out::println);
+        return adminService.getAllHubs();
     }
 
 }

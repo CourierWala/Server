@@ -176,7 +176,7 @@ public class StaffServiceImpl implements StaffService{
 	        fullName = dto.getFirstName() + " " + dto.getLastName();
 	    }
 	    user.setName(fullName);
-	    
+	    user.setEmail(dto.getEmail());
 	    // Update phone
 	    user.setPhone(dto.getPhone());
 

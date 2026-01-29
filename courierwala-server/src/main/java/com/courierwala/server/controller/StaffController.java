@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,6 +30,10 @@ import com.courierwala.server.staffdto.staffProfileResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin(
+	    origins = "http://localhost:5173",
+	    allowCredentials = "true"
+	)
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
@@ -153,6 +158,9 @@ public class StaffController {
 		return "confirmation msg: Order Delivered";
 	}
 	
+
+	//Tested
+	// Returns the profile of Delivery-Staff
 	
 	@GetMapping("/dashboard")
 	public ResponseEntity<?> getAvailableOrders() {
@@ -199,6 +207,7 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
+
 	@GetMapping("/profile/{staffId}")
 	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
 	    try {
@@ -213,7 +222,8 @@ public class StaffController {
 	    }
 	}
 
-	
+	//Tested
+	// Returns the Conformation msg if updated successfully
 	@PostMapping("/profile/{staffId}")
 	public ResponseEntity<ApiResponse> updateStaffProfile( @PathVariable Long staffId, @RequestBody staffProfileResponseDTO dto) {
 
@@ -232,9 +242,14 @@ public class StaffController {
 	@PostMapping("/profile/changepassword/{staffId}")
 	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
 	{
+	
 		try {
+	       
+	                
+
 	        return ResponseEntity.status(HttpStatus.OK)
 	                .body(staffservice.changePassword(staffId, dto));
+
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));

@@ -15,9 +15,11 @@ public class GlobalExceptionHandler {
 
     // Business: Resource not found (CRUD APIs)
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+    public ResponseEntity<?> handleResourceNotFound(
             ResourceNotFoundException ex,
             WebRequest request) {
+    	
+    	System.out.println("===================== in resorce not found ==========================");
     	ex.printStackTrace();
 
         ErrorResponse error = new ErrorResponse(
@@ -58,22 +60,22 @@ public class GlobalExceptionHandler {
 
     // Optional: fallback for unexpected business errors
     
-//    @ExceptionHandler(RuntimeException.class)
-//    public ResponseEntity<ErrorResponse> handleRuntimeException(
-//            RuntimeException ex,
-//            WebRequest request) {
-//    	
-//    	ex.printStackTrace();
-//
-//        ErrorResponse error = new ErrorResponse(
-//                LocalDateTime.now(),
-//                "Internal server error",
-//                request.getDescription(false),
-//                HttpStatus.INTERNAL_SERVER_ERROR.value()
-//        );
-//
-//        return ResponseEntity
-//                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                .body(error);
-//    }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex,
+            WebRequest request) {
+    	
+    	ex.printStackTrace();
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                "Internal server error",
+                request.getDescription(false),
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(error);
+    }
 }
