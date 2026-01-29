@@ -3,21 +3,14 @@ package com.courierwala.server.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.courierwala.server.admindto.AddManagerDto;
-import com.courierwala.server.admindto.AdminProfileUpdateDto;
-import com.courierwala.server.admindto.ManagerDetailsDto;
-import com.courierwala.server.admindto.ManagerUpdateDto;
-import com.courierwala.server.entities.Address;
-import com.courierwala.server.admindto.PriceChangeDto;
+import com.courierwala.server.admindto.*;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.PricingConfig;
 import com.courierwala.server.entities.User;
 import com.courierwala.server.enumfield.Role;
-import com.courierwala.server.enumfield.Status;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.PricingConfigRepository;
 import com.courierwala.server.repository.UserRepository;
-import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -115,6 +108,47 @@ public class AdminServiceImpl implements AdminService {
         dto.setBasePrice(pricing.getBasePrice());
         dto.setPricePerKm(pricing.getPricePerKm());
         dto.setPricePerKg(pricing.getPricePerKg());
+
+        return dto;
+    }
+
+    // =================================================
+    //             HUB SERVICES
+    // =================================================
+
+    @Override
+    public List<HubDetailsDto> getAllHubs() {
+        List<Hub> hubs = hubRepository.findAll();
+        List<HubDetailsDto> hubDetails = new ArrayList<>();
+
+        for (Hub hub : hubs) {
+            HubDetailsDto dto = HubDetailsDto.builder()
+                    .hubId(hub.getId())
+                    .hubName(hub.getHubName())
+                    .hubCity(hub.getHubCity())
+                    .managerId(hub.getManager().getId())
+                    .managerName(hub.getManager().getName())
+                    .build();
+
+            hubDetails.add(dto);
+        }
+
+        return hubDetails;
+    }
+
+    public AdminProfileUpdateDto getAdminProfile(Long adminId) {
+
+        User user = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 🔐 Ensure this user is ADMIN
+        if (user.getRole() != Role.ROLE_ADMIN) {
+            throw new RuntimeException("Access denied: Not an admin");
+        }
+
+        AdminProfileUpdateDto dto = new AdminProfileUpdateDto();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
 
         return dto;
     }

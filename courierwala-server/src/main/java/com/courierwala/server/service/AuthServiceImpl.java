@@ -45,12 +45,10 @@ public class AuthServiceImpl implements AuthService {
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .phone(dto.getPhone())
                 .role(Role.ROLE_CUSTOMER)
-
                 .status(Status.ACTIVE)
                 .build();
 
         userRepository.save(user);
-
         return new ApiResponse("success", "Customer registered successfully");
     }
 
