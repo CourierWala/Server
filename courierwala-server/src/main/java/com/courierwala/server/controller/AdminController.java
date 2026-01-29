@@ -2,11 +2,7 @@ package com.courierwala.server.controller;
 
 import java.util.List;
 
-import com.courierwala.server.admindto.AddManagerDto;
-import com.courierwala.server.admindto.AdminProfileUpdateDto;
-import com.courierwala.server.admindto.ManagerDetailsDto;
-import com.courierwala.server.admindto.ManagerUpdateDto;
-import com.courierwala.server.admindto.PriceChangeDto;
+import com.courierwala.server.admindto.*;
 import com.courierwala.server.dto.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -83,5 +79,11 @@ public class AdminController {
         );
     }
 
+    @GetMapping("/hubs")
+    public List<HubDetailsDto> getAllHubs(){
+        List<HubDetailsDto> allHubs = adminService.getAllHubs();
+        allHubs.forEach(System.out::println);
+        return adminService.getAllHubs();
+    }
 
 }

@@ -23,41 +23,41 @@ public class SecurityConfig {
 	private final CustomAccessDeniedHandler accessDeniedHandler;
 	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-	@Bean
-	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
-		         .cors(cors -> {})
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
-						.permitAll()
-						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
-					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
-						.anyRequest().authenticated())
-				        .exceptionHandling(ex -> ex
-		                .accessDeniedHandler(accessDeniedHandler)        // 403
-		                .authenticationEntryPoint(authenticationEntryPoint) // 401
-		            )
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-		return http.build();
-	}
-
 //	@Bean
 //	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//		http
-//				.csrf(csrf -> csrf.disable())
-//				.cors(cors -> {})
-//				.authorizeHttpRequests(auth ->
-//						auth.anyRequest().permitAll()
-//				)
-//				.sessionManagement(session ->
-//						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//				);
+//		http.csrf(csrf -> csrf.disable())
+//		         .cors(cors -> {})
+//				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
+//						.permitAll()
+//						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+//						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
+//					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
+//						.anyRequest().authenticated())
+//				        .exceptionHandling(ex -> ex
+//		                .accessDeniedHandler(accessDeniedHandler)        // 403
+//		                .authenticationEntryPoint(authenticationEntryPoint) // 401
+//		            )
+//				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//
+//		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 //
 //		return http.build();
 //	}
+
+	@Bean
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http
+				.csrf(csrf -> csrf.disable())
+				.cors(cors -> {})
+				.authorizeHttpRequests(auth ->
+						auth.anyRequest().permitAll()
+				)
+				.sessionManagement(session ->
+						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				);
+
+		return http.build();
+	}
 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
