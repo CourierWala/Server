@@ -5,6 +5,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,10 @@ import com.courierwala.server.security.CustomUserDetails;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -57,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResDTO login(LoginDTO loginDTO, HttpServletResponse response) {
 
-    	System.out.println("in login !!");
+        System.out.println("in login !!");
         // 1️ Authenticate user (email + password)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -69,6 +74,22 @@ public class AuthServiceImpl implements AuthService {
         // 2️ Get authenticated user
         // IMPORTANT: User must implement UserDetails
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        if (user != null) {
+            User user1 = userRepository
+                    .findByEmail(loginDTO.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Invalid user details"));
+
+            if(user1.getRole() == Role.ROLE_DELIVERY_STAFF && user1.getStatus() == Status.INACTIVE){
+                return new LoginResDTO(
+                        "failure",
+                        "User not found",
+                        null,
+                        null,
+                        null
+                );
+            }
+        }
 
         // 3 Generate JWT (contains id, email, role)
         String token = jwtUtil.generateToken(user);
