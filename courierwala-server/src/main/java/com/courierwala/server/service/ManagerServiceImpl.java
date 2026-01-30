@@ -54,4 +54,14 @@ public class ManagerServiceImpl implements ManagerService {
 
         return res;
     }
+
+    @Override
+    public void rejectApplication(Long rejectApplicationId) {
+        DeliveryStaffProfile staff = deliveryStaffProfileRepository
+                .findById(rejectApplicationId)
+                .orElseThrow(()-> new RuntimeException("Application not found"));
+
+        deliveryStaffProfileRepository.deleteById(rejectApplicationId);
+        userRepository.deleteById(staff.getUser().getId());
+    }
 }

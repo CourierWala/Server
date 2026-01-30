@@ -4,6 +4,7 @@ import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.GetStaffDto;
 import com.courierwala.server.service.ManagerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class ManagerController {
 
         return ResponseEntity.ok(
                 new ApiResponse(
-                        "Manager details updated successfully",
+                        "Delivery staff hired successfully!!!",
                         "SUCCESS"
                 )
         );
@@ -42,5 +43,19 @@ public class ManagerController {
     @GetMapping("/current-staff")
     public List<GetStaffDto> getAllCurrentStaff() {
         return managerService.getAllStaff(true);
+    }
+
+    @GetMapping("/rejectStaff/{rejectApplicationId}")
+    public ResponseEntity<ApiResponse> rejectApplication(
+            @PathVariable Long rejectApplicationId) {
+
+        managerService.rejectApplication(rejectApplicationId);
+
+        return ResponseEntity.ok(
+                new ApiResponse(
+                        "Job application rejected!!!",
+                        "SUCCESS"
+                )
+        );
     }
 }

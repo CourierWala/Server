@@ -8,4 +8,6 @@ public interface ManagerService {
     void acceptDeliveryStaff(Long applicationId);
 
     List<GetStaffDto> getAllStaff(boolean isCurrentStaff);
+
+    void rejectApplication(Long rejectApplicationId);
 }
