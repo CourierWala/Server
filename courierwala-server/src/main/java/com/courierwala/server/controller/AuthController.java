@@ -18,6 +18,7 @@ import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.dto.LoginResDTO;
 import com.courierwala.server.service.AuthService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -48,5 +49,21 @@ public class AuthController {
 		return ResponseEntity.ok(res);
 
 	}
+	
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+
+    	System.out.println("logout route !!");
+        Cookie cookie = new Cookie("JWT_TOKEN", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true); // true if HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(0); //  delete cookie
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("Logged out successfully");
+    }
 
 }

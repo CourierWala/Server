@@ -42,9 +42,9 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public ShipmentResDto createShipment(ShipmentRequest req) {
 
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //
-//		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
 //
 //        System.out.println("role : " + user.getAuthorities());
 		User customer = getLoggedInUser(3L);
@@ -63,6 +63,9 @@ public class CustomerServiceImpl implements CustomerService {
 				req.getDeliveryLatitude(), req.getDeliveryLongitude());
 
 		System.out.println("after calling ======================================================================");
+		
+		
+		
 
 		PricingConfig pricing = pricingConfigRepository.findAll()
 				.stream()
@@ -77,8 +80,8 @@ public class CustomerServiceImpl implements CustomerService {
 				.pickupAddress(pickupAddress).deliveryAddress(deliveryAddress).sourceHub(routing.getSourceHub())
 				.destinationHub(routing.getDestinationHub()).currentHub(routing.getSourceHub())
 				.distanceKm(routing.getDistanceKm()).packageWeight(req.getWeight())
-				.packageSize(PackageSize.valueOf(req.getPackageSize()))
-				.deliveryType(DeliveryType.valueOf(req.getDeliveryType())).pickupDate(req.getPickupDate())
+				.packageSize(PackageSize.valueOf(req.getPackageSize().toUpperCase()))
+				.deliveryType(DeliveryType.valueOf(req.getDeliveryType().toUpperCase())).pickupDate(req.getPickupDate())
 				.orderStatus(OrderStatus.CREATED)
 				.paymentStatus(PaymentStatus.PENDING).paymentRequired(true).packageDescription(req.getDescription())
 				.build();
@@ -98,7 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
 	        LocalDateTime.now()
 	    );
 
-//	    orderEventPublisher.publishOrderStatusEvent(event);
+	    orderEventPublisher.publishOrderStatusEvent(event);
 		
 		 return new ShipmentResDto(order.getId(),pri ,"Shipment created successfully ","success");
 
@@ -132,7 +135,13 @@ public class CustomerServiceImpl implements CustomerService {
 
        
    
-  
+    private Long getUserId() {
+       
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    	CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+    	return user.getId();
+    }
   
 
 	
@@ -141,8 +150,10 @@ public class CustomerServiceImpl implements CustomerService {
   
    // ================= VIEW PROFILE =================
     @Override
-    public CustomerProfileDto getCustomerProfile(Long customerId) {
-
+    public CustomerProfileDto getCustomerProfile() {
+        
+    	System.out.println("in customer get profile !!");
+    	Long customerId = getUserId();
         User user = userRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
@@ -157,8 +168,8 @@ public class CustomerServiceImpl implements CustomerService {
   
    // ================= UPDATE PROFILE =================
     @Override
-    public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
-
+    public void updateCustomerProfile(CustomerProfileUpdateDto dto) {
+        Long customerId = getUserId();
         User user = userRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
