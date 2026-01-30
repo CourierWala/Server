@@ -11,9 +11,9 @@ import java.util.List;
 public interface CustomerService {
 
 
-    CustomerProfileDto getCustomerProfile(Long customerId);
+    CustomerProfileDto getCustomerProfile();
 
-    void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto);
+    void updateCustomerProfile(CustomerProfileUpdateDto dto);
 
 	ShipmentResDto createShipment(@Valid ShipmentRequest request);
 
