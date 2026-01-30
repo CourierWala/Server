@@ -41,7 +41,7 @@ public class StaffController {
 	
 	@Autowired
 	public final StaffService staffservice;
-	@PutMapping("/Current-Orders/Hub/{orderId}")
+	@PatchMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(@PathVariable Long orderId )
 	{
 	    try {
@@ -56,7 +56,7 @@ public class StaffController {
 	}
 	
 	
-	@PutMapping("/Current-Orders/customer/{orderId}")
+	@PatchMapping("/Current-Orders/customer/{orderId}")
 	public ResponseEntity<?> markCustomerOrderDelivered(@PathVariable Long orderId )
 	{
 	    try {
@@ -69,7 +69,7 @@ public class StaffController {
 	}
 
 	
-	@PutMapping("/accepted-orders/{orderId}")
+	@PatchMapping("/accepted-orders/{orderId}")
 	public ResponseEntity<?> pickupAssignedOrder( @PathVariable Long orderId){
 	    try {
 	        return ResponseEntity.ok(staffservice.pickupAssignedOrder(orderId));
@@ -80,12 +80,11 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
-	@PutMapping("/dashboard/Hub/{orderid}")
+	@PatchMapping("/dashboard/Hub/{orderid}")
 	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid)
 	{
 	    try {	    	
 	    	staffservice.assignHubOrderToStaff( orderid);
-
 	        return ResponseEntity.ok(new ApiResponse("Hub-Order assigned successfully", "SUCCESS"));
 	    } catch (RuntimeException e) {
 	        return ResponseEntity
@@ -94,12 +93,11 @@ public class StaffController {
 	    }
 	}
 	
-	@PutMapping("/dashboard/customer/{orderid}")
+	@PatchMapping("/dashboard/customer/{orderid}")
 	public ResponseEntity<?> assignOrder(@PathVariable Long orderid)
 	{
 	    try {
 	    	staffservice.assignOrderToStaff(orderid);
-	    	
 	        return ResponseEntity.ok(new ApiResponse("Customer-Order assigned successfully", "SUCCESS"));
 
 	    } catch (RuntimeException e) {
@@ -185,9 +183,8 @@ public class StaffController {
 
 	//Tested
 	// Returns the Conformation msg if updated successfully
-	@PostMapping("/profile")
+	@PatchMapping("/profile")
 	public ResponseEntity<ApiResponse> updateStaffProfile( @RequestBody staffProfileResponseDTO dto) {
-
 	    try {
 	        
 	        return ResponseEntity.status(HttpStatus.OK)
@@ -225,8 +222,5 @@ public class StaffController {
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 		}
     }
-	
-
-
-	
+		
 }
