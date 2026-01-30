@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.courierwala.server.config.RabbitMQConfig;
 import com.courierwala.server.dto.OrderStatusEvent;
+import com.courierwala.server.dto.ShipmentCreatedEvent;
 
 @Service
 public class OrderEventPublisher {
@@ -20,4 +21,13 @@ public class OrderEventPublisher {
                 event
         );
     }
+    
+    public void publishShipmentCreatedEvent(ShipmentCreatedEvent event) {
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.ORDER_EXCHANGE,
+                RabbitMQConfig.SHIPMENT_CREATED_KEY,
+                event
+        );
+    }
 }
+

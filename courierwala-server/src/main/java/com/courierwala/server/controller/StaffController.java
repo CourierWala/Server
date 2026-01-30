@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StaffController {  
 	
-	@Autowired
 	public final StaffService staffservice;
 
 	private final DeliveryStatsService deliveryStatsService;

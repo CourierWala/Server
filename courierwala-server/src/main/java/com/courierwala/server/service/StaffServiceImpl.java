@@ -1,7 +1,19 @@
 package com.courierwala.server.service;
 
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
+import com.courierwala.server.dto.OrderStatusEvent;
 import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.DeliveryAssignment;
 import com.courierwala.server.entities.DeliveryStaffProfile;
@@ -13,6 +25,7 @@ import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.Role;
 import com.courierwala.server.enumfield.Status;
 import com.courierwala.server.enumfield.VehicleType; // keep ONLY if used
+import com.courierwala.server.events.OrderEventPublisher;
 import com.courierwala.server.repository.CourierOrderRepository;
 import com.courierwala.server.repository.DeliveryAssignmentRepository;
 import com.courierwala.server.repository.HubRepository;
@@ -26,17 +39,9 @@ import com.courierwala.server.staffdto.staffProfileResponseDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -49,7 +54,8 @@ public class StaffServiceImpl implements StaffService{
 	private final CourierOrderRepository orderRepository;
 	private final DeliveryAssignmentRepository assignmentRepository;
 	private final PasswordEncoder pass;
-
+    private final OrderEventPublisher orderEventPublisher;
+	
 	@Override
 	public void signUp(StaffSignupDto dto) {
 
@@ -495,6 +501,16 @@ public class StaffServiceImpl implements StaffService{
 	            .build();
 
 	    assignmentRepository.save(assignment);	
+	    
+	    LocalDateTime now = LocalDateTime.now();
+
+		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.PICKUP_ASSIGNED.name(), staff.getId(),
+				"Order created", now);
+	try {
+			orderEventPublisher.publishOrderStatusEvent(event);
+		} catch (Exception ex) {
+			log.error("Failed to publish shipment events", ex);
+		}
 	}
 
 	@Override
@@ -531,8 +547,17 @@ public class StaffServiceImpl implements StaffService{
 	    staff.setActiveOrders(currentActive + 1);
 
 	    assignmentRepository.save(assignment);
-	    staffRepo.save(staff);
-	    orderRepository.save(order);
+	    staffRepo.save(staff);	
+	     orderRepository.save(order);
+	    LocalDateTime now = LocalDateTime.now();
+
+		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.OUT_FOR_DELIVERY.name(), staff.getId(),
+				"Order created", now);
+	try {
+			orderEventPublisher.publishOrderStatusEvent(event);
+		} catch (Exception ex) {
+			log.error("Failed to publish shipment events", ex);
+		}
 	}
 
 	@Override
@@ -575,6 +600,16 @@ public class StaffServiceImpl implements StaffService{
 	    //  Save
 	    orderRepository.save(order);
 	    assignmentRepository.save(assignment);
+	    
+	    LocalDateTime now = LocalDateTime.now();
+
+		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.PICKED_UP.name(), staffId,
+				"Order created", now);
+	try {
+			orderEventPublisher.publishOrderStatusEvent(event);
+		} catch (Exception ex) {
+			log.error("Failed to publish shipment events", ex);
+		}
 
 	    return new ApiResponse("Order picked up successfully", "SUCCESS");
 		
@@ -619,6 +654,16 @@ public class StaffServiceImpl implements StaffService{
 		    orderRepository.save(order);
 		    assignmentRepository.save(assignment);
 		    staffRepo.save(staff);	
+		    
+		    LocalDateTime now = LocalDateTime.now();
+
+			OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.AT_SOURCE_HUB.name(), staff.getId(),
+					"Order created", now);
+		try {
+				orderEventPublisher.publishOrderStatusEvent(event);
+			} catch (Exception ex) {
+				log.error("Failed to publish shipment events", ex);
+			}
 	}
 
 
@@ -654,6 +699,16 @@ public class StaffServiceImpl implements StaffService{
 	    orderRepository.save(order);
 	    assignmentRepository.save(assignment);
 	    staffRepo.save(staff);	
+	    
+	    LocalDateTime now = LocalDateTime.now();
+
+		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.DELIVERED.name(), staff.getId(),
+				"Order created", now);
+	try {
+			orderEventPublisher.publishOrderStatusEvent(event);
+		} catch (Exception ex) {
+			log.error("Failed to publish shipment events", ex);
+		}
 	}
 
 
