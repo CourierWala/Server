@@ -14,12 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
-import com.courierwala.server.entities.DeliveryStaffProfile;
-import com.courierwala.server.entities.User;
-import com.courierwala.server.service.CustomerService;
+import com.courierwala.server.service.DeliveryStatsService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
@@ -40,12 +37,7 @@ public class StaffController {
 	
 	@Autowired
 	public final StaffService staffservice;
-//
-//	@GetMapping("/{staffid}")
-//	public String getAllOrdersByStaff() {
-//		//TODO : create a responce = list of all orders with status in_transit and staffid = staffid 
-//		return "orderList";
-//	}
+	private final DeliveryStatsService deliveryStatsService;
 	
 	@PatchMapping("/order/pickup/{orderid}")
 	public String pickUpOrder() {
@@ -64,9 +56,6 @@ public class StaffController {
 		//TODO : upadate order status to Delivered of order with orderid 
 		return "confirmation msg: Order Delivered";
 	}
-	
-	//Tested
-	// Returns the profile of Delivery-Staff
 	
 	@GetMapping("/dashboard")
 	public ResponseEntity<?> getAvailableOrders() {
@@ -155,10 +144,10 @@ public class StaffController {
 	    }
 	}
 	
-	@GetMapping("/earnings/{staffid}")
-	public String getCompletedOrdersByStaff() {
-		//TODO : create a responce = list of all orders with status in_transit and staffid = staffid 
-		return "orderList";
+	@GetMapping("/earnings/{staffid}/weekly")
+	public ResponseEntity<?> getCompletedOrdersByStaff(@PathVariable Long staffid) {
+		
+		return ResponseEntity.ok(deliveryStatsService.getWeeklyDeliveredOrders(staffid));
 	}
 	
 
