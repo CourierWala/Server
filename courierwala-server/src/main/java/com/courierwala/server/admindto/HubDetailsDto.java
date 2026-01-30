@@ -20,4 +20,8 @@ public class HubDetailsDto {
     private Long managerId;
 
     private String managerName;
+
+    private String managerEmail;
+
+    private String managerPhone;
 }

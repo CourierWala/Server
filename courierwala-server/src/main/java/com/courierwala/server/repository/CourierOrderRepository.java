@@ -28,9 +28,9 @@ public interface CourierOrderRepository extends JpaRepository<CourierOrder, Long
 	        WHERE da.deliveryStaff.id = :staffId
 	          AND (
 	                (co.orderStatus = 'PICKUP_ASSIGNED'
-	                 AND da.deliveryStatus = 'ASSIGNED')
+	                 AND da.deliveryStatus = 'HUB_ASSIGNED')
 	             OR (co.orderStatus = 'OUT_FOR_DELIVERY'
-	                 AND da.deliveryStatus = 'PICKED_UP')
+	                 AND da.deliveryStatus = 'USER_PICKED_UP')
 	          )
 	    """)
 	List<CourierOrder> findAcceptedOrdersForStaff(Long staffId);
@@ -43,9 +43,9 @@ public interface CourierOrderRepository extends JpaRepository<CourierOrder, Long
 	        WHERE da.deliveryStaff.id = :staffId
 	          AND (
 	                (co.orderStatus = 'PICKED_UP'
-	                 AND da.deliveryStatus = 'PICKED_UP')
+	                 AND da.deliveryStatus = 'HUB_PICKED_UP')
 	             OR (co.orderStatus = 'OUT_FOR_DELIVERY'
-	                 AND da.deliveryStatus = 'PICKED_UP')
+	                 AND da.deliveryStatus = 'USER_PICKED_UP')
 	          )
 	    """)
 	List<CourierOrder> findCurrentOrdersForStaff(Long staffId);
@@ -63,6 +63,21 @@ public interface CourierOrderRepository extends JpaRepository<CourierOrder, Long
 		      AND da.deliveryStatus = com.courierwala.server.enumfield.DeliveryStatus.DELIVERED
 		""")
 		List<CourierOrder> findDeliveredOrdersForStaff(@Param("staffId") Long staffId);
+
+	
+	@Query("""
+		    SELECT o FROM CourierOrder o
+		    WHERE
+		        (o.orderStatus = :created AND o.sourceHub.id = :hubId)
+		        OR
+		        (o.orderStatus = :atHub AND o.destinationHub.id = :hubId)
+		""")
+		List<CourierOrder> findDashboardOrdersForHub(
+		        @Param("created") OrderStatus created,
+		        @Param("atHub") OrderStatus atHub,
+		        @Param("hubId") Long hubId
+		);
+
 
 
 }

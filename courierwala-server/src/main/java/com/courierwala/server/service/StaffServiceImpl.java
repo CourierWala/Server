@@ -74,10 +74,10 @@ public class StaffServiceImpl implements StaffService{
 	    User user = User.builder()
 	            .name(dto.getName())
 	            .email(dto.getEmail())
-	            .password(passwordEncoder.encode(dto.getPassword())) // hash later
+	            .password(passwordEncoder.encode("Pass@123")) // hash later
 	            .phone(dto.getPhone())
 	            .role(Role.ROLE_DELIVERY_STAFF)
-	            .status(Status.ACTIVE)
+	            .status(Status.INACTIVE)
 	            .build();
 
 	    customerRepo.save(user);
@@ -249,10 +249,15 @@ public class StaffServiceImpl implements StaffService{
 
 	@Override
 	public List<CourierOrderDto>getDashboardOrders(){
-
-	    List<OrderStatus> statuses = List.of(OrderStatus.CREATED, OrderStatus.AT_DESTINATION_HUB );
-
-	    List<CourierOrder> orders = orderRepository.findByOrderStatusIn(statuses);
+		Long staffId = getStaffIdFromUserId();
+		DeliveryStaffProfile staff = staffRepo.getReferenceById(staffId);
+//	    
+	    List<CourierOrder> orders =
+	            orderRepository.findDashboardOrdersForHub(
+	                    OrderStatus.CREATED,
+	                    OrderStatus.AT_DESTINATION_HUB,
+	                    staff.getHub().getId()
+	            );
 
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
@@ -492,7 +497,7 @@ public class StaffServiceImpl implements StaffService{
 	            .deliveryStaff(staff)
 	            .manager(staff.getHub().getManager())
 	            .assignedBy(AssignedBy.MANAGER)
-	            .deliveryStatus(DeliveryStatus.ASSIGNED)
+	            .deliveryStatus(DeliveryStatus.HUB_ASSIGNED)//
 	            .build();
 
 	    assignmentRepository.save(assignment);	
@@ -508,56 +513,42 @@ public class StaffServiceImpl implements StaffService{
 		}
 	}
 
-
 	@Override
 	public void assignHubOrderToStaff(Long orderid) {
-		
-		Long staffId = getStaffIdFromUserId();
-		// Fetch staff profile
+
+	    Long staffId = getStaffIdFromUserId();
+
 	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
-	            .orElseThrow(() ->
-	                    new RuntimeException("Delivery staff not found")
-	            );
+	            .orElseThrow(() -> new RuntimeException("Delivery staff not found"));
 
-	    //  Fetch order
 	    CourierOrder order = orderRepository.findById(orderid)
-	            .orElseThrow(() ->
-	                    new RuntimeException("Order not found")
-	            );
+	            .orElseThrow(() -> new RuntimeException("Order not found"));
 
-	    //  Validate order status
-	    if (order.getOrderStatus() != OrderStatus.AT_DESTINATION_HUB){
-	        throw new RuntimeException(
-	                "Order is not available for assignment in hub"
-	        );
+	    if (order.getOrderStatus() != OrderStatus.AT_DESTINATION_HUB) {
+	        throw new RuntimeException("Order is not available for assignment in hub");
 	    }
 
-	    //  Prevent duplicate assignment
-	    if (assignmentRepository.existsByOrder(order)) {
-	        throw new RuntimeException("Order already assigned");
-	    }
+	    DeliveryAssignment assignment =
+	            assignmentRepository.findByOrder(order)
+	                    .orElseThrow(() -> new RuntimeException(
+	                            "Assignment does not exist for this order"
+	                    ));
 
-	    //  Update order status
+	    // UPDATE existing assignment
+	    assignment.setDeliveryStaff(staff);
+	    assignment.setDeliveryStatus(DeliveryStatus.USER_PICKED_UP);
+	    assignment.setAssignedBy(AssignedBy.MANAGER);
+
+	    // Update order
 	    order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
-	    
-	    //Increment active orders safely
+
+	    // Update staff
 	    int currentActive = staff.getActiveOrders() != null ? staff.getActiveOrders() : 0;
-
-	    staff.setActiveOrders(currentActive+1);
-	    orderRepository.save(order);
-
-	    //  Create delivery assignment
-	    DeliveryAssignment assignment = DeliveryAssignment.builder()
-	            .order(order)
-	            .deliveryStaff(staff)
-	            .manager(staff.getHub().getManager())
-	            .assignedBy(AssignedBy.MANAGER)
-	            .deliveryStatus(DeliveryStatus.PICKED_UP)
-	            .build();
+	    staff.setActiveOrders(currentActive + 1);
 
 	    assignmentRepository.save(assignment);
 	    staffRepo.save(staff);	
-	    
+	     orderRepository.save(order);
 	    LocalDateTime now = LocalDateTime.now();
 
 		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.OUT_FOR_DELIVERY.name(), staff.getId(),
@@ -581,7 +572,7 @@ public class StaffServiceImpl implements StaffService{
 	            );
 
 	    //  Validate Order Status
-	    if (order.getOrderStatus() != OrderStatus.PICKUP_ASSIGNED) {
+	    if (order.getOrderStatus() != OrderStatus.PICKUP_ASSIGNED) {//
 	        throw new RuntimeException("Order is not in PICKUP_ASSIGNED state");
 	    }
 
@@ -598,13 +589,13 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    //  Validate Assignment Status
-	    if (assignment.getDeliveryStatus() != DeliveryStatus.ASSIGNED) {
+	    if (assignment.getDeliveryStatus() != DeliveryStatus.HUB_ASSIGNED) {
 	        throw new RuntimeException("Order already picked or invalid state");
 	    }
 
 	    //  Update statuses
 	    order.setOrderStatus(OrderStatus.PICKED_UP);
-	    assignment.setDeliveryStatus(DeliveryStatus.PICKED_UP);
+	    assignment.setDeliveryStatus(DeliveryStatus.HUB_PICKED_UP);//
 
 	    //  Save
 	    orderRepository.save(order);
@@ -645,11 +636,15 @@ public class StaffServiceImpl implements StaffService{
 		        throw new RuntimeException("Order not assigned to this staff");
 		    }
 
-		    // Update order status
-		    order.setOrderStatus(OrderStatus.AT_SOURCE_HUB);
+		   // Update order status based on destination hub if destination_hub is null then directly do  AT_DESTINATION_HUB
+		    if (order.getDestinationHub() == null) {
+		        order.setOrderStatus(OrderStatus.AT_DESTINATION_HUB);
+		    } else {
+		        order.setOrderStatus(OrderStatus.AT_SOURCE_HUB);
+		    }
 
 		    // Update assignment status 
-		    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+		    assignment.setDeliveryStatus(DeliveryStatus.HUB_DELIVERED);
 
 		    // Update staff stats
 		    DeliveryStaffProfile staff = assignment.getDeliveryStaff();
@@ -694,7 +689,7 @@ public class StaffServiceImpl implements StaffService{
 	    order.setOrderStatus(OrderStatus.DELIVERED);
 
 	    // Update assignment status 
-	    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+	    assignment.setDeliveryStatus(DeliveryStatus.USER_DELIVERED);
 
 	    // Update staff stats
 	    DeliveryStaffProfile staff = assignment.getDeliveryStaff();

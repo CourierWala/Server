@@ -27,9 +27,9 @@ public class StaffSignupDto {
     @NotBlank(message = "Phone number is required")
     private String phone;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
-    private String password;
+//    @NotBlank(message = "Password is required")
+//    @Size(min = 6, message = "Password must be at least 6 characters")
+//    private String password;
 
     /*  STAFF PROFILE FIELDS  */
 

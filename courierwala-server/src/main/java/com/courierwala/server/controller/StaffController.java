@@ -15,12 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
-import com.courierwala.server.entities.DeliveryStaffProfile;
-import com.courierwala.server.entities.User;
-import com.courierwala.server.service.CustomerService;
+import com.courierwala.server.service.DeliveryStatsService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
@@ -40,7 +37,11 @@ import lombok.RequiredArgsConstructor;
 public class StaffController {  
 	
 	public final StaffService staffservice;
-	@PutMapping("/Current-Orders/Hub/{orderId}")
+
+	private final DeliveryStatsService deliveryStatsService;
+	
+
+	@PatchMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(@PathVariable Long orderId )
 	{
 	    try {
@@ -55,7 +56,7 @@ public class StaffController {
 	}
 	
 	
-	@PutMapping("/Current-Orders/customer/{orderId}")
+	@PatchMapping("/Current-Orders/customer/{orderId}")
 	public ResponseEntity<?> markCustomerOrderDelivered(@PathVariable Long orderId )
 	{
 	    try {
@@ -68,7 +69,7 @@ public class StaffController {
 	}
 
 	
-	@PutMapping("/accepted-orders/{orderId}")
+	@PatchMapping("/accepted-orders/{orderId}")
 	public ResponseEntity<?> pickupAssignedOrder( @PathVariable Long orderId){
 	    try {
 	        return ResponseEntity.ok(staffservice.pickupAssignedOrder(orderId));
@@ -79,12 +80,11 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
-	@PutMapping("/dashboard/Hub/{orderid}")
+	@PatchMapping("/dashboard/Hub/{orderid}")
 	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid)
 	{
 	    try {	    	
 	    	staffservice.assignHubOrderToStaff( orderid);
-
 	        return ResponseEntity.ok(new ApiResponse("Hub-Order assigned successfully", "SUCCESS"));
 	    } catch (RuntimeException e) {
 	        return ResponseEntity
@@ -93,12 +93,11 @@ public class StaffController {
 	    }
 	}
 	
-	@PutMapping("/dashboard/customer/{orderid}")
+	@PatchMapping("/dashboard/customer/{orderid}")
 	public ResponseEntity<?> assignOrder(@PathVariable Long orderid)
 	{
 	    try {
 	    	staffservice.assignOrderToStaff(orderid);
-	    	
 	        return ResponseEntity.ok(new ApiResponse("Customer-Order assigned successfully", "SUCCESS"));
 
 	    } catch (RuntimeException e) {
@@ -184,9 +183,8 @@ public class StaffController {
 
 	//Tested
 	// Returns the Conformation msg if updated successfully
-	@PostMapping("/profile")
+	@PatchMapping("/profile")
 	public ResponseEntity<ApiResponse> updateStaffProfile( @RequestBody staffProfileResponseDTO dto) {
-
 	    try {
 	        
 	        return ResponseEntity.status(HttpStatus.OK)
@@ -212,20 +210,25 @@ public class StaffController {
 	    }
 	}
 	
+	@GetMapping("/earnings/{staffid}/weekly")
+	public ResponseEntity<?> getCompletedOrdersByStaff(@PathVariable Long staffid) {
+		
+		return ResponseEntity.ok(deliveryStatsService.getWeeklyDeliveredOrders(staffid));
+	}
+	
+
+	
 	
 	@PostMapping("/applyforjob")
     public ResponseEntity<?> signUp(
             @Valid @RequestBody StaffSignupDto signupdto){
         try {
         	   staffservice.signUp(signupdto);
-			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("signup sucessfully", "success"));
+			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Applied for job successfully", "success"));
 		} catch (RuntimeException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(new ApiResponse(e.getMessage(), "Failed"));
 		}
     }
-	
-
-
-	
+		
 }
