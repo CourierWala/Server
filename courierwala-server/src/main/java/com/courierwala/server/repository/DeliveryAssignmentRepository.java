@@ -17,7 +17,7 @@ public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssi
 	            FUNCTION('DAYOFWEEK', da.updatedAt) AS dayOfWeek,
 	            COUNT(da.id) AS total
 	        FROM DeliveryAssignment da
-	        WHERE da.deliveryStatus = 'DELIVERED'
+	        WHERE da.deliveryStatus = 'HUB_DELIVERED' OR da.deliveryStatus = 'USER_DELIVERED'
 	          AND da.deliveryStaff.id = :staffId
 	          AND da.updatedAt BETWEEN :weekStart AND :weekEnd
 	        GROUP BY FUNCTION('DAYOFWEEK', da.updatedAt)

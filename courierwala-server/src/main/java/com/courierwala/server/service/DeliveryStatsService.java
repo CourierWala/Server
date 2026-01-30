@@ -42,9 +42,11 @@ public class DeliveryStatsService {
             dayMap.put(i, 0L);
         }
 
+        //delivery staff gets 30 rs for each order delivered
+        int mul =30;
         // Fill actual counts
         for (DayCountProjection row : result) {
-            dayMap.put(row.getDayOfWeek(), row.getTotal());
+            dayMap.put(row.getDayOfWeek(), row.getTotal()*mul);
         }
 
         return List.of(
