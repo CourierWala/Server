@@ -39,7 +39,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class StaffController {  
 	
-	@Autowired
 	public final StaffService staffservice;
 	@PutMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(@PathVariable Long orderId )
