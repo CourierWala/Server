@@ -54,7 +54,6 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         userRepository.save(user);
-
         return new ApiResponse("success", "Customer registered successfully");
     }
 
