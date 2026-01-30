@@ -63,6 +63,9 @@ public class CustomerServiceImpl implements CustomerService {
 				req.getDeliveryLatitude(), req.getDeliveryLongitude());
 
 		System.out.println("after calling ======================================================================");
+		
+		
+		
 
 		PricingConfig pricing = pricingConfigRepository.findAll()
 				.stream()
@@ -77,8 +80,8 @@ public class CustomerServiceImpl implements CustomerService {
 				.pickupAddress(pickupAddress).deliveryAddress(deliveryAddress).sourceHub(routing.getSourceHub())
 				.destinationHub(routing.getDestinationHub()).currentHub(routing.getSourceHub())
 				.distanceKm(routing.getDistanceKm()).packageWeight(req.getWeight())
-				.packageSize(PackageSize.valueOf(req.getPackageSize()))
-				.deliveryType(DeliveryType.valueOf(req.getDeliveryType())).pickupDate(req.getPickupDate())
+				.packageSize(PackageSize.valueOf(req.getPackageSize().toUpperCase()))
+				.deliveryType(DeliveryType.valueOf(req.getDeliveryType().toUpperCase())).pickupDate(req.getPickupDate())
 				.orderStatus(OrderStatus.CREATED)
 				.paymentStatus(PaymentStatus.PENDING).paymentRequired(true).packageDescription(req.getDescription())
 				.build();
@@ -98,7 +101,7 @@ public class CustomerServiceImpl implements CustomerService {
 	        LocalDateTime.now()
 	    );
 
-//	    orderEventPublisher.publishOrderStatusEvent(event);
+	    orderEventPublisher.publishOrderStatusEvent(event);
 		
 		 return new ShipmentResDto(order.getId(),pri ,"Shipment created successfully ","success");
 
