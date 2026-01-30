@@ -68,10 +68,10 @@ public class StaffServiceImpl implements StaffService{
 	    User user = User.builder()
 	            .name(dto.getName())
 	            .email(dto.getEmail())
-	            .password(passwordEncoder.encode(dto.getPassword())) // hash later
+	            .password(passwordEncoder.encode("Pass@123")) // hash later
 	            .phone(dto.getPhone())
 	            .role(Role.ROLE_DELIVERY_STAFF)
-	            .status(Status.ACTIVE)
+	            .status(Status.INACTIVE)
 	            .build();
 
 	    customerRepo.save(user);

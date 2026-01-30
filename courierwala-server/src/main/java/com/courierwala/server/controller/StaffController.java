@@ -225,7 +225,7 @@ public class StaffController {
             @Valid @RequestBody StaffSignupDto signupdto){
         try {
         	   staffservice.signUp(signupdto);
-			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("signup sucessfully", "success"));
+			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Applied for job successfully", "success"));
 		} catch (RuntimeException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(new ApiResponse(e.getMessage(), "Failed"));
