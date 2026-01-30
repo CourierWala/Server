@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.DeliveryAssignment;
+import com.courierwala.server.enumfield.DeliveryStatus;
 
 @Repository
 public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssignment, Long> {
@@ -42,6 +44,12 @@ public interface DeliveryAssignmentRepository extends JpaRepository<DeliveryAssi
 	Optional<DeliveryAssignment> findByOrder(CourierOrder order);
 
 	Optional<DeliveryAssignment> findByOrderId(Long orderId);
+	
+	boolean existsByOrderAndDeliveryStatus(
+	        CourierOrder order,
+	        DeliveryStatus deliveryStatus
+	);
+
 	
 	
 
