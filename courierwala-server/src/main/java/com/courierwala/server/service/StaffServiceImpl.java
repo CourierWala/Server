@@ -18,6 +18,7 @@ import com.courierwala.server.repository.DeliveryAssignmentRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
 import com.courierwala.server.repository.UserRepository;
+import com.courierwala.server.security.CustomUserDetails;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
@@ -29,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,12 +42,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StaffServiceImpl implements StaffService{
 	
-	
+	private final PasswordEncoder passwordEncoder;
 	public final StaffRepository staffRepo;
 	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
 	private final CourierOrderRepository orderRepository;
 	private final DeliveryAssignmentRepository assignmentRepository;
+	private final PasswordEncoder pass;
 
 	@Override
 	public void signUp(StaffSignupDto dto) {
@@ -63,7 +68,7 @@ public class StaffServiceImpl implements StaffService{
 	    User user = User.builder()
 	            .name(dto.getName())
 	            .email(dto.getEmail())
-	            .password(dto.getPassword()) // hash later
+	            .password(passwordEncoder.encode(dto.getPassword())) // hash later
 	            .phone(dto.getPhone())
 	            .role(Role.ROLE_DELIVERY_STAFF)
 	            .status(Status.ACTIVE)
@@ -111,9 +116,10 @@ public class StaffServiceImpl implements StaffService{
 	
 	
 	@Override
-	public staffProfileResponseDTO getStaffProfile(Long staffId) {
+	public staffProfileResponseDTO getStaffProfile() {
+		// staffid
+		Long staffId = getStaffIdFromUserId();
 		
-		//check for staff
 	    DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
@@ -153,7 +159,9 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto) {
+	public ApiResponse updateStaffProfile(staffProfileResponseDTO dto) {
+		
+		Long staffId = getStaffIdFromUserId();
 		
 		//check for email
 		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
@@ -188,9 +196,9 @@ public class StaffServiceImpl implements StaffService{
 	    
 	    // Save staffProfile changes
 	    staffRepo.save(staffProfile);
-	    
+	   
 	 // Fetch updated profile
-	    staffProfileResponseDTO updatedProfile = getStaffProfile(staffId);
+	    staffProfileResponseDTO updatedProfile = getStaffProfile();
 
 	    // Return ApiResponse
 	    return new ApiResponse("staff profile updated successfully", "success");
@@ -198,14 +206,14 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public ApiResponse changePassword(Long staffId, @Valid ChangePasswordDto dto) {
+	public ApiResponse changePassword(@Valid ChangePasswordDto dto) {
 		
+		Long staffId = getStaffIdFromUserId();
 		//check for email
 		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
 	            );
-
 	    User user = staffProfile.getUser();
 	    
 	    // Role validation
@@ -214,8 +222,8 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    // Validate current password
-	    if (!user.getPassword().equals(dto.getCurrentPassword())) {
-	        throw new RuntimeException("Current password is incorrect");
+	    if (!(pass.matches(dto.getCurrentPassword(), user.getPassword()))){
+	        throw new RuntimeException("Current password is incorrect "+user.getPassword()+ ""+ dto.getCurrentPassword());
 	    }
 
 	    //  Validate new and confirm password
@@ -224,17 +232,17 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    
 	 // Update password 
-	    user.setPassword(dto.getNewPassword());
+	    user.setPassword(pass.encode(dto.getNewPassword()) );
 
+	    
 	    // Save changes
 	    customerRepo.save(user);
-
 		return new ApiResponse("password updated successfully","success");
 	}
 
 
 	@Override
-	public List<CourierOrderDto> getDashboardOrders() {
+	public List<CourierOrderDto>getDashboardOrders(){
 
 	    List<OrderStatus> statuses = List.of(OrderStatus.CREATED, OrderStatus.AT_DESTINATION_HUB );
 
@@ -243,15 +251,13 @@ public class StaffServiceImpl implements StaffService{
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
 	    for (CourierOrder order : orders) {
-
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
-
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
 	                .customerName(order.getCustomer().getName())
-
 	                // ADDRESSES
 	                .pickupAddress(
 	                        order.getPickupAddress() != null
@@ -263,7 +269,6 @@ public class StaffServiceImpl implements StaffService{
 	                                ? order.getDeliveryAddress().getFullAddress()
 	                                : null
 	                )
-
 	                // HUBS
 	                .sourceHubId(order.getSourceHub().getId())
 	                .sourceHubName(order.getSourceHub().getHubName())
@@ -278,66 +283,12 @@ public class StaffServiceImpl implements StaffService{
 	                                ? order.getDestinationHub().getHubName()
 	                                : null
 	                )
-
 	                // PACKAGE
 	                .packageWeight(order.getPackageWeight())
 	                .packageSize(order.getPackageSize())
 	                .deliveryType(order.getDeliveryType())
 	                .distanceKm(order.getDistanceKm())
 	                .price(order.getPrice())
-
-	                .build();
-
-	        dtoList.add(dto);
-	    }
-
-	    return dtoList;
-	}
-
-
-	@Override
-	public List<CourierOrderDto> getAcceptedOrders(Long staffId) {
-
-	    List<CourierOrder> orders =
-	    		orderRepository.findAcceptedOrdersForStaff(staffId);
-
-	    List<CourierOrderDto> dtoList = new ArrayList<>();
-
-	    for (CourierOrder order : orders) {
-
-	        CourierOrderDto dto = CourierOrderDto.builder()
-	                .trackingNumber(order.getTrackingNumber())
-	                .status(order.getOrderStatus())
-	                // CUSTOMER
-	                .customerId(order.getCustomer().getId())
-	                .customerName(order.getCustomer().getName())
-
-	                // ADDRESSES
-	                .pickupAddress(order.getPickupAddress().getFullAddress())
-	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
-
-	                // HUBS
-	                .sourceHubId(order.getSourceHub().getId())
-	                .sourceHubName(order.getSourceHub().getHubName())
-
-	                .destinationHubId(
-	                        order.getDestinationHub() != null
-	                                ? order.getDestinationHub().getId()
-	                                : null
-	                )
-	                .destinationHubName(
-	                        order.getDestinationHub() != null
-	                                ? order.getDestinationHub().getHubName()
-	                                : null
-	                )
-
-	                // PACKAGE
-	                .packageWeight(order.getPackageWeight())
-	                .packageSize(order.getPackageSize())
-	                .deliveryType(order.getDeliveryType())
-	                .distanceKm(order.getDistanceKm())
-	                .price(order.getPrice())
-
 	                .build();
 
 	        dtoList.add(dto);
@@ -345,17 +296,67 @@ public class StaffServiceImpl implements StaffService{
 	    return dtoList;
 	}
 
-
 	@Override
-	public List<CourierOrderDto> getCurrentOrders(Long staffId) {
-		List<CourierOrder> orders = orderRepository.findCurrentOrdersForStaff(staffId);
+	public List<CourierOrderDto> getAcceptedOrders(){
 
+		Long staffId = getStaffIdFromUserId();
+	    List<CourierOrder> orders = orderRepository.findAcceptedOrdersForStaff(staffId);
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
 	    for (CourierOrder order : orders){
 
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
+	                .status(order.getOrderStatus())
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+	    return dtoList;
+	}
+
+
+	@Override
+	public List<CourierOrderDto> getCurrentOrders() {
+		Long staffId = getStaffIdFromUserId();
+		List<CourierOrder> orders = orderRepository.findCurrentOrdersForStaff(staffId);
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders){
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
@@ -393,13 +394,63 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    return dtoList;
 	}
+	
+	
+	@Override
+	public List<CourierOrderDto> getDeliveredOrdersForStaff() {
+
+	    Long staffId = getStaffIdFromUserId();
+	    List<CourierOrder> orders = orderRepository.findDeliveredOrdersForStaff(staffId);
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders) {
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .Orderid(order.getId())
+	                .trackingNumber(order.getTrackingNumber())
+	                .status(order.getOrderStatus())
+
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+	    return dtoList;
+	}
+
 
 
 	@Override
-	public void assignOrderToStaff(Long staffId, Long orderid) {
-		// TODO Auto-generated method stub
+	public void assignOrderToStaff(Long orderid) {
 		
-		
+		Long staffId = getStaffIdFromUserId();
 		
 		// Fetch staff profile
 	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
@@ -438,14 +489,14 @@ public class StaffServiceImpl implements StaffService{
 	            .deliveryStatus(DeliveryStatus.ASSIGNED)
 	            .build();
 
-	    assignmentRepository.save(assignment);
-		
+	    assignmentRepository.save(assignment);	
 	}
 
 
 	@Override
-	public void assignHubOrderToStaff(Long staffId, Long orderid) {
+	public void assignHubOrderToStaff(Long orderid) {
 		
+		Long staffId = getStaffIdFromUserId();
 		// Fetch staff profile
 	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
@@ -489,13 +540,13 @@ public class StaffServiceImpl implements StaffService{
 	            .build();
 
 	    assignmentRepository.save(assignment);
-	    staffRepo.save(staff);
-		
+	    staffRepo.save(staff);	
 	}
 
-
 	@Override
-	public ApiResponse pickupAssignedOrder(Long staffId, Long orderId){
+	public ApiResponse pickupAssignedOrder(Long orderId){
+		
+		Long staffId = getStaffIdFromUserId();
 		
 		 // Fetch Order
 	    CourierOrder order = orderRepository.findById(orderId)
@@ -539,7 +590,9 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public void completeCustomerPickup(Long staffId, Long orderId) {
+	public void completeCustomerPickup( Long orderId) {
+		
+		Long staffId = getStaffIdFromUserId();
 		
 		 CourierOrder order = orderRepository.findById(orderId)
 		            .orElseThrow(() -> new RuntimeException("Order not found"));
@@ -557,7 +610,7 @@ public class StaffServiceImpl implements StaffService{
 		    }
 
 		    // Update order status
-		    order.setOrderStatus(OrderStatus.DELIVERED);
+		    order.setOrderStatus(OrderStatus.AT_SOURCE_HUB);
 
 		    // Update assignment status 
 		    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
@@ -569,21 +622,20 @@ public class StaffServiceImpl implements StaffService{
 
 		    orderRepository.save(order);
 		    assignmentRepository.save(assignment);
-		    staffRepo.save(staff);
-		
+		    staffRepo.save(staff);	
 	}
 
 
 	@Override
-	public void completeHuborderPickup(Long staffId, Long orderId) {
+	public void completeHuborderPickup( Long orderId) {
 	
+		Long staffId = getStaffIdFromUserId();
 		CourierOrder order = orderRepository.findById(orderId)
 	            .orElseThrow(() -> new RuntimeException("Order not found"));
 
 	    if (order.getOrderStatus() != OrderStatus.OUT_FOR_DELIVERY) {
 	        throw new RuntimeException("Order is not in OUT_FOR_DELIVERY state");
 	    }
-
 	    DeliveryAssignment assignment =
 	            assignmentRepository.findByOrderId(orderId)
 	                    .orElseThrow(() -> new RuntimeException("Assignment not found"));
@@ -609,8 +661,26 @@ public class StaffServiceImpl implements StaffService{
 	}
 
 
-
 	
+	public  Long getStaffIdFromUserId(){
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !authentication.isAuthenticated()) {
+	        throw new RuntimeException("User not authenticated");
+	    }
+		
+	    Object principal = authentication.getPrincipal();
+	    if (!(principal instanceof CustomUserDetails)) {
+	        	throw new RuntimeException("Invalid authentication principal");
+	    }
+
+		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        DeliveryStaffProfile staff = staffRepo.findByUser_Id(user.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Delivery staff profile not found"));
+        return staff.getId();
+    }
 
 
 
