@@ -68,7 +68,8 @@ public class AuthServiceImpl implements AuthService {
         // 2️ Get authenticated user
         // IMPORTANT: User must implement UserDetails
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-
+         
+  
         // 3 Generate JWT (contains id, email, role)
         String token = jwtUtil.generateToken(user);
 

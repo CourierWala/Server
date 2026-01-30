@@ -15,12 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
-import com.courierwala.server.entities.DeliveryStaffProfile;
-import com.courierwala.server.entities.User;
-import com.courierwala.server.service.CustomerService;
+import com.courierwala.server.service.DeliveryStatsService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
@@ -41,6 +38,10 @@ public class StaffController {
 	
 	@Autowired
 	public final StaffService staffservice;
+
+	private final DeliveryStatsService deliveryStatsService;
+	
+
 	@PatchMapping("/Current-Orders/Hub/{orderId}")
 	public ResponseEntity<?> markHubOrderDelivered(@PathVariable Long orderId )
 	{
@@ -209,6 +210,14 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(),"failed"));
 	    }
 	}
+	
+	@GetMapping("/earnings/{staffid}/weekly")
+	public ResponseEntity<?> getCompletedOrdersByStaff(@PathVariable Long staffid) {
+		
+		return ResponseEntity.ok(deliveryStatsService.getWeeklyDeliveredOrders(staffid));
+	}
+	
+
 	
 	
 	@PostMapping("/applyforjob")
