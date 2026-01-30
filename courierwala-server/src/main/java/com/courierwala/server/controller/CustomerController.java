@@ -23,10 +23,10 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-@CrossOrigin(
-	    origins = "http://localhost:5173",
-	    allowCredentials = "true"
-	)
+//@CrossOrigin(
+//	    origins = "http://localhost:5173",
+//	    allowCredentials = "true"
+//	)
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
@@ -36,22 +36,21 @@ public class CustomerController {
 
 
     // ================= VIEW PROFILE =================
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> profile(@PathVariable Long id) {
-
-        CustomerProfileDto response = customerService.getCustomerProfile(id);
+    @GetMapping("/profile")
+    public ResponseEntity<?> profile() {
+        System.out.println("in profile ==================================================");
+        CustomerProfileDto response = customerService.getCustomerProfile();
 
         return ResponseEntity.ok(response);
     }
 
 
     // ================= UPDATE PROFILE =================
-    @PutMapping("/profile/{id}")
-    public ResponseEntity<?> updateProfile(
-            @PathVariable Long id,
-            @Valid @RequestBody CustomerProfileUpdateDto dto) {
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody CustomerProfileUpdateDto dto) {
 
-        customerService.updateCustomerProfile(id, dto);
+    	System.out.println("in upafdte profile !!");
+        customerService.updateCustomerProfile(dto);
 
         return ResponseEntity.ok(
                 new ApiResponse("Customer profile updated successfully", "success"));

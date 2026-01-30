@@ -42,9 +42,9 @@ public class CustomerServiceImpl implements CustomerService {
 	@Override
 	public ShipmentResDto createShipment(ShipmentRequest req) {
 
-//		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 //
-//		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
 //
 //        System.out.println("role : " + user.getAuthorities());
 		User customer = getLoggedInUser(3L);
@@ -132,7 +132,13 @@ public class CustomerServiceImpl implements CustomerService {
 
        
    
-  
+    private Long getUserId() {
+       
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    	CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+    	return user.getId();
+    }
   
 
 	
@@ -141,8 +147,10 @@ public class CustomerServiceImpl implements CustomerService {
   
    // ================= VIEW PROFILE =================
     @Override
-    public CustomerProfileDto getCustomerProfile(Long customerId) {
-
+    public CustomerProfileDto getCustomerProfile() {
+        
+    	System.out.println("in customer get profile !!");
+    	Long customerId = getUserId();
         User user = userRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
@@ -157,8 +165,8 @@ public class CustomerServiceImpl implements CustomerService {
   
    // ================= UPDATE PROFILE =================
     @Override
-    public void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto) {
-
+    public void updateCustomerProfile(CustomerProfileUpdateDto dto) {
+        Long customerId = getUserId();
         User user = userRepository.findById(customerId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
