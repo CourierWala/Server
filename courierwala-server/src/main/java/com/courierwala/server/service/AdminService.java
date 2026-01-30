@@ -12,6 +12,7 @@ public interface AdminService {
     void updateAdminProfile(Long adminId, AdminProfileUpdateDto dto);
 
     void addManager(AddManagerDto manager);
+//    void updateAdminProfile(Long adminId, AdminProfileUpdateDto dto);
 
     void changePrice(PriceChangeDto dto);
     PriceChangeDto getPriceConfig();
