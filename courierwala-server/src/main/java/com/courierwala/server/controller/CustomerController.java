@@ -1,6 +1,7 @@
 package com.courierwala.server.controller;
 
 
+import com.courierwala.server.customerdto.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,11 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.courierwala.server.customerdto.CustomerProfileDto;
-import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
-import com.courierwala.server.customerdto.ShipmentRequest;
-import com.courierwala.server.customerdto.ShipmentResDto;
-import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.User;
@@ -25,10 +21,12 @@ import com.courierwala.server.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(
-	    origins = "http://localhost:5173",
-	    allowCredentials = "true"
-	)
+import java.util.List;
+
+//@CrossOrigin(
+//	    origins = "http://localhost:5173",
+//	    allowCredentials = "true"
+//	)
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
@@ -38,27 +36,26 @@ public class CustomerController {
 
 
     // ================= VIEW PROFILE =================
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<?> profile(@PathVariable Long id) {
-
-        CustomerProfileDto response = customerService.getCustomerProfile(id);
+    @GetMapping("/profile")
+    public ResponseEntity<?> profile() {
+        System.out.println("in profile ==================================================");
+        CustomerProfileDto response = customerService.getCustomerProfile();
 
         return ResponseEntity.ok(response);
     }
 
 
     // ================= UPDATE PROFILE =================
-    @PutMapping("/profile/{id}")
-    public ResponseEntity<?> updateProfile(
-            @PathVariable Long id,
-            @Valid @RequestBody CustomerProfileUpdateDto dto) {
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody CustomerProfileUpdateDto dto) {
 
-        customerService.updateCustomerProfile(id, dto);
+    	System.out.println("in upafdte profile !!");
+        customerService.updateCustomerProfile(dto);
 
         return ResponseEntity.ok(
                 new ApiResponse("Customer profile updated successfully", "success"));
     }
-  
+
   
   	@PostMapping("/shipments")
 	public ResponseEntity<?> createShipment(@Valid @RequestBody ShipmentRequest request) {
@@ -69,4 +66,13 @@ public class CustomerController {
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(shipmentResponce);
 	}
+
+
+    @GetMapping("/shipments")
+    public ResponseEntity<List<ShipmentSummaryDto>> getAllMyShipments() {
+    	System.out.println("in shipments !!");
+        return ResponseEntity.ok(
+                customerService.getAllMyShipments()
+        );
+    }
 }

@@ -2,6 +2,7 @@ package com.courierwala.server.repository;
 
 import java.util.List;
 
+import com.courierwala.server.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -48,4 +49,20 @@ public interface CourierOrderRepository extends JpaRepository<CourierOrder, Long
 	          )
 	    """)
 	List<CourierOrder> findCurrentOrdersForStaff(Long staffId);
+
+	List<CourierOrder> findByCustomerOrderByCreatedAtDesc(User customer);
+	
+	
+	
+	@Query("""
+		    SELECT o
+		    FROM CourierOrder o
+		    JOIN DeliveryAssignment da ON da.order = o
+		    WHERE o.orderStatus = com.courierwala.server.enumfield.OrderStatus.DELIVERED
+		      AND da.deliveryStaff.id = :staffId
+		      AND da.deliveryStatus = com.courierwala.server.enumfield.DeliveryStatus.DELIVERED
+		""")
+		List<CourierOrder> findDeliveredOrdersForStaff(@Param("staffId") Long staffId);
+
+
 }

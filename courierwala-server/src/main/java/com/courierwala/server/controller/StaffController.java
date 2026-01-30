@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,24 +44,79 @@ public class StaffController {
 	public String pickUpOrder() {
 		//TODO : upadate order status to Out_For_Delivery of order with orderid 
 		return "confirmation msg: Order picked up";
+	@PutMapping("/Current-Orders/Hub/{orderId}")
+	public ResponseEntity<?> markHubOrderDelivered(@PathVariable Long orderId )
+	{
+	    try {
+	        staffservice.completeHuborderPickup(orderId);
+	        return ResponseEntity.ok( new ApiResponse("Order delivered successfully", "SUCCESS"));
+
+	    } catch (RuntimeException e){
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
 	}
 	
-	@GetMapping("/order/{orderid}")
-	public String getOrderDetails() {
-		//TODO : get complete Order Details of given orderId
-		return "Order Details";
+	
+	@PutMapping("/Current-Orders/customer/{orderId}")
+	public ResponseEntity<?> markCustomerOrderDelivered(@PathVariable Long orderId )
+	{
+	    try {
+	        staffservice.completeCustomerPickup(orderId);
+	        return ResponseEntity.ok(new ApiResponse("Order delivered  successfully to Hub ", "SUCCESS") );
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+
+	
+	@PutMapping("/accepted-orders/{orderId}")
+	public ResponseEntity<?> pickupAssignedOrder( @PathVariable Long orderId){
+	    try {
+	        return ResponseEntity.ok(staffservice.pickupAssignedOrder(orderId));
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+	@PutMapping("/dashboard/Hub/{orderid}")
+	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid)
+	{
+	    try {	    	
+	    	staffservice.assignHubOrderToStaff( orderid);
+
+	        return ResponseEntity.ok(new ApiResponse("Hub-Order assigned successfully", "SUCCESS"));
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
 	}
 	
-	@PatchMapping("/order/delivered/{orderid}")
-	public String markAsDelivered() {
-		//TODO : upadate order status to Delivered of order with orderid 
-		return "confirmation msg: Order Delivered";
+	@PutMapping("/dashboard/customer/{orderid}")
+	public ResponseEntity<?> assignOrder(@PathVariable Long orderid)
+	{
+	    try {
+	    	staffservice.assignOrderToStaff(orderid);
+	    	
+	        return ResponseEntity.ok(new ApiResponse("Customer-Order assigned successfully", "SUCCESS"));
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.BAD_REQUEST)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
 	}
-	
+
 	@GetMapping("/dashboard")
-	public ResponseEntity<?> getAvailableOrders() {
+	public ResponseEntity<?> getAvailableOrders(){
 	    try {
 	        List<CourierOrderDto> orders = staffservice.getDashboardOrders();
+	        //System.out.println("call");
 	        return ResponseEntity.ok(orders);
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -69,12 +125,11 @@ public class StaffController {
 	}
 	
 	@GetMapping("/accepted-orders")
-	public ResponseEntity<?> getAcceptedOrders(/*HttpSession session*/) {
+	public ResponseEntity<?> getAcceptedOrders(){
 	    try {
-	        //Long staffId = (Long) session.getAttribute("staffId");
-	    	Long staffId =  (long) 1;
+	       
 	        List<CourierOrderDto> orders =
-	        		staffservice.getAcceptedOrders(staffId);
+	        		staffservice.getAcceptedOrders();
 
 	        return ResponseEntity.ok(orders);
 
@@ -86,12 +141,11 @@ public class StaffController {
 	}	
 	
 	@GetMapping("/current-orders")
-	public ResponseEntity<?> getCurrentOrders(/*HttpSession session*/) {
+	public ResponseEntity<?> getCurrentOrders( ) {
 	    try {
-	        //Long staffId = (Long) session.getAttribute("staffId");
-	    	Long staffId =  (long) 1;
+	        
 	        List<CourierOrderDto> orders =
-	        		staffservice.getCurrentOrders(staffId);
+	        		staffservice.getCurrentOrders();
 
 	        return ResponseEntity.ok(orders);
 
@@ -101,11 +155,28 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
-	@GetMapping("/profile/{staffId}")
-	public ResponseEntity<?> getStaffProfile(@PathVariable Long staffId) {
+	
+	@GetMapping("/delivered-orders")
+	public ResponseEntity<?> getDeliveredOrders() {
+	    try {
+	        List<CourierOrderDto> orders =
+	                staffservice.getDeliveredOrdersForStaff();
+
+	        return ResponseEntity.ok(orders);
+
+	    } catch (RuntimeException e) {
+	        return ResponseEntity
+	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(new ApiResponse(e.getMessage(), "FAILED"));
+	    }
+	}
+
+
+	@GetMapping("/profile")
+	public ResponseEntity<?> getStaffProfile() {
 	    try {
 	        staffProfileResponseDTO response =
-	                staffservice.getStaffProfile(staffId);
+	                staffservice.getStaffProfile();
 
 	        return ResponseEntity.status(HttpStatus.OK).body(response);
 	               
@@ -117,13 +188,13 @@ public class StaffController {
 
 	//Tested
 	// Returns the Conformation msg if updated successfully
-	@PostMapping("/profile/{staffId}")
-	public ResponseEntity<ApiResponse> updateStaffProfile( @PathVariable Long staffId, @RequestBody staffProfileResponseDTO dto) {
+	@PostMapping("/profile")
+	public ResponseEntity<ApiResponse> updateStaffProfile( @RequestBody staffProfileResponseDTO dto) {
 
 	    try {
 	        
 	        return ResponseEntity.status(HttpStatus.OK)
-	                .body(staffservice.updateStaffProfile(staffId, dto));
+	                .body(staffservice.updateStaffProfile(dto));
 
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -132,12 +203,13 @@ public class StaffController {
 	}
 	
 	
-	@PostMapping("/profile/{staffId}/setpassword")
-	public ResponseEntity<?> changePassword( @PathVariable Long staffId, @Valid @RequestBody ChangePasswordDto dto)
+	@PostMapping("/profile/changepassword")
+	public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordDto dto)
 	{
 		try {
 	        return ResponseEntity.status(HttpStatus.OK)
-	                .body(staffservice.changePassword(staffId, dto));
+	                .body(staffservice.changePassword( dto));
+
 	    } catch (RuntimeException e) {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(),"failed"));
@@ -165,17 +237,7 @@ public class StaffController {
 		}
     }
 	
-	@PostMapping("/login")
-    public ResponseEntity<?> login(
-            @Valid @RequestBody LoginDTO loginDTO) {
-		
-		try {
-			staffservice.login(loginDTO);
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(new ApiResponse("login sucessfully", "success"));
-		} catch (RuntimeException e) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(new ApiResponse(e.getMessage(), "Failed"));
-		}
-    }
+
+
 	
 }

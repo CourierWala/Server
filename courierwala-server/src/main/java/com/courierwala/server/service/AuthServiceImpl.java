@@ -44,12 +44,11 @@ public class AuthServiceImpl implements AuthService {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .phone(dto.getPhone())
-                .role(Role.ROLE_ADMIN)
+                .role(Role.ROLE_CUSTOMER)
                 .status(Status.ACTIVE)
                 .build();
 
         userRepository.save(user);
-
         return new ApiResponse("success", "Customer registered successfully");
     }
 
@@ -57,6 +56,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResDTO login(LoginDTO loginDTO, HttpServletResponse response) {
 
+    	System.out.println("in login !!");
         // 1️ Authenticate user (email + password)
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -68,7 +68,8 @@ public class AuthServiceImpl implements AuthService {
         // 2️ Get authenticated user
         // IMPORTANT: User must implement UserDetails
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
-
+         
+  
         // 3 Generate JWT (contains id, email, role)
         String token = jwtUtil.generateToken(user);
 

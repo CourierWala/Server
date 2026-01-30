@@ -20,7 +20,7 @@ import lombok.Setter;
 public class CourierOrderDto {
 
     private String trackingNumber;
-
+    private Long Orderid;
     // CUSTOMER
     private Long customerId;
     private String customerName;
@@ -41,5 +41,5 @@ public class CourierOrderDto {
     private PackageSize packageSize;
     private DeliveryType deliveryType;
     private Double distanceKm;
-    private BigDecimal price;
+    private Double price;
 }

@@ -7,6 +7,7 @@ import com.courierwala.server.entities.DeliveryAssignment;
 import com.courierwala.server.entities.DeliveryStaffProfile;
 import com.courierwala.server.entities.Hub;
 import com.courierwala.server.entities.User;
+import com.courierwala.server.enumfield.AssignedBy;
 import com.courierwala.server.enumfield.DeliveryStatus;
 import com.courierwala.server.enumfield.OrderStatus;
 import com.courierwala.server.enumfield.Role;
@@ -17,6 +18,7 @@ import com.courierwala.server.repository.DeliveryAssignmentRepository;
 import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.repository.StaffRepository;
 import com.courierwala.server.repository.UserRepository;
+import com.courierwala.server.security.CustomUserDetails;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
 import com.courierwala.server.staffdto.StaffSignupDto;
@@ -28,6 +30,9 @@ import lombok.RequiredArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,12 +42,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class StaffServiceImpl implements StaffService{
 	
-	
+	private final PasswordEncoder passwordEncoder;
 	public final StaffRepository staffRepo;
 	public final UserRepository customerRepo;
 	public final HubRepository hubRepository;
 	private final CourierOrderRepository orderRepository;
 	private final DeliveryAssignmentRepository assignmentRepository;
+	private final PasswordEncoder pass;
 
 	@Override
 	public void signUp(StaffSignupDto dto) {
@@ -58,12 +64,11 @@ public class StaffServiceImpl implements StaffService{
 	            .orElseThrow(() -> new RuntimeException("Hub not found"));
 
 
-
 	    //3 Create User
 	    User user = User.builder()
 	            .name(dto.getName())
 	            .email(dto.getEmail())
-	            .password(dto.getPassword()) // hash later
+	            .password(passwordEncoder.encode(dto.getPassword())) // hash later
 	            .phone(dto.getPhone())
 	            .role(Role.ROLE_DELIVERY_STAFF)
 	            .status(Status.ACTIVE)
@@ -105,17 +110,16 @@ public class StaffServiceImpl implements StaffService{
 	    if (user.getStatus() != Status.ACTIVE) {
 	        throw new IllegalStateException("User account is inactive");
 	    }
-
-	   
+   
 	}
-
 
 	
 	
 	@Override
-	public staffProfileResponseDTO getStaffProfile(Long staffId) {
+	public staffProfileResponseDTO getStaffProfile() {
+		// staffid
+		Long staffId = getStaffIdFromUserId();
 		
-		//check for staff
 	    DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
@@ -155,7 +159,9 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto) {
+	public ApiResponse updateStaffProfile(staffProfileResponseDTO dto) {
+		
+		Long staffId = getStaffIdFromUserId();
 		
 		//check for email
 		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
@@ -188,12 +194,11 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    staffProfile.setVehicleNumber(dto.getVehicleNumber());
 	    
-	    
 	    // Save staffProfile changes
 	    staffRepo.save(staffProfile);
-	    
+	   
 	 // Fetch updated profile
-	    staffProfileResponseDTO updatedProfile = getStaffProfile(staffId);
+	    staffProfileResponseDTO updatedProfile = getStaffProfile();
 
 	    // Return ApiResponse
 	    return new ApiResponse("staff profile updated successfully", "success");
@@ -201,14 +206,14 @@ public class StaffServiceImpl implements StaffService{
 
 
 	@Override
-	public ApiResponse changePassword(Long staffId, @Valid ChangePasswordDto dto) {
+	public ApiResponse changePassword(@Valid ChangePasswordDto dto) {
 		
+		Long staffId = getStaffIdFromUserId();
 		//check for email
 		DeliveryStaffProfile staffProfile = staffRepo.findById(staffId)
 	            .orElseThrow(() ->
 	                    new RuntimeException("Staff profile not found with id: " + staffId)
 	            );
-
 	    User user = staffProfile.getUser();
 	    
 	    // Role validation
@@ -217,8 +222,8 @@ public class StaffServiceImpl implements StaffService{
 	    }
 
 	    // Validate current password
-	    if (!user.getPassword().equals(dto.getCurrentPassword())) {
-	        throw new RuntimeException("Current password is incorrect");
+	    if (!(pass.matches(dto.getCurrentPassword(), user.getPassword()))){
+	        throw new RuntimeException("Current password is incorrect "+user.getPassword()+ ""+ dto.getCurrentPassword());
 	    }
 
 	    //  Validate new and confirm password
@@ -227,38 +232,32 @@ public class StaffServiceImpl implements StaffService{
 	    }
 	    
 	 // Update password 
-	    user.setPassword(dto.getNewPassword());
-
-	    // Save changes
-	    customerRepo.save(user);
+	    user.setPassword(pass.encode(dto.getNewPassword()) );
 
 	    
+	    // Save changes
+	    customerRepo.save(user);
 		return new ApiResponse("password updated successfully","success");
 	}
 
 
 	@Override
-	public List<CourierOrderDto> getDashboardOrders() {
+	public List<CourierOrderDto>getDashboardOrders(){
 
-	    List<OrderStatus> statuses = List.of(
-	            OrderStatus.CREATED,
-	            OrderStatus.AT_DESTINATION_HUB
-	    );
+	    List<OrderStatus> statuses = List.of(OrderStatus.CREATED, OrderStatus.AT_DESTINATION_HUB );
 
 	    List<CourierOrder> orders = orderRepository.findByOrderStatusIn(statuses);
 
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
 	    for (CourierOrder order : orders) {
-
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
-
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
 	                .customerName(order.getCustomer().getName())
-
 	                // ADDRESSES
 	                .pickupAddress(
 	                        order.getPickupAddress() != null
@@ -270,7 +269,6 @@ public class StaffServiceImpl implements StaffService{
 	                                ? order.getDeliveryAddress().getFullAddress()
 	                                : null
 	                )
-
 	                // HUBS
 	                .sourceHubId(order.getSourceHub().getId())
 	                .sourceHubName(order.getSourceHub().getHubName())
@@ -285,86 +283,80 @@ public class StaffServiceImpl implements StaffService{
 	                                ? order.getDestinationHub().getHubName()
 	                                : null
 	                )
-
 	                // PACKAGE
 	                .packageWeight(order.getPackageWeight())
 	                .packageSize(order.getPackageSize())
 	                .deliveryType(order.getDeliveryType())
 	                .distanceKm(order.getDistanceKm())
 	                .price(order.getPrice())
-
 	                .build();
 
 	        dtoList.add(dto);
 	    }
-
 	    return dtoList;
 	}
 
-
 	@Override
-	public List<CourierOrderDto> getAcceptedOrders(Long staffId) {
+	public List<CourierOrderDto> getAcceptedOrders(){
 
-	    List<CourierOrder> orders =
-	    		orderRepository.findAcceptedOrdersForStaff(staffId);
-
-	    List<CourierOrderDto> dtoList = new ArrayList<>();
-
-	    for (CourierOrder order : orders) {
-
-	        CourierOrderDto dto = CourierOrderDto.builder()
-	                .trackingNumber(order.getTrackingNumber())
-	                .status(order.getOrderStatus())
-	                // CUSTOMER
-	                .customerId(order.getCustomer().getId())
-	                .customerName(order.getCustomer().getName())
-
-	                // ADDRESSES
-	                .pickupAddress(order.getPickupAddress().getFullAddress())
-	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
-
-	                // HUBS
-	                .sourceHubId(order.getSourceHub().getId())
-	                .sourceHubName(order.getSourceHub().getHubName())
-
-	                .destinationHubId(
-	                        order.getDestinationHub() != null
-	                                ? order.getDestinationHub().getId()
-	                                : null
-	                )
-	                .destinationHubName(
-	                        order.getDestinationHub() != null
-	                                ? order.getDestinationHub().getHubName()
-	                                : null
-	                )
-
-	                // PACKAGE
-	                .packageWeight(order.getPackageWeight())
-	                .packageSize(order.getPackageSize())
-	                .deliveryType(order.getDeliveryType())
-	                .distanceKm(order.getDistanceKm())
-	                .price(order.getPrice())
-
-	                .build();
-
-	        dtoList.add(dto);
-	    }
-
-	    return dtoList;
-	}
-
-
-	@Override
-	public List<CourierOrderDto> getCurrentOrders(Long staffId) {
-		List<CourierOrder> orders =
-	    		orderRepository.findCurrentOrdersForStaff(staffId);
-
+		Long staffId = getStaffIdFromUserId();
+	    List<CourierOrder> orders = orderRepository.findAcceptedOrdersForStaff(staffId);
 	    List<CourierOrderDto> dtoList = new ArrayList<>();
 
 	    for (CourierOrder order : orders){
 
 	        CourierOrderDto dto = CourierOrderDto.builder()
 	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
+	                .status(order.getOrderStatus())
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+	                .build();
+
+	        dtoList.add(dto);
+	    }
+	    return dtoList;
+	}
+
+
+	@Override
+	public List<CourierOrderDto> getCurrentOrders() {
+		Long staffId = getStaffIdFromUserId();
+		List<CourierOrder> orders = orderRepository.findCurrentOrdersForStaff(staffId);
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders){
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .trackingNumber(order.getTrackingNumber())
+	                .Orderid(order.getId())
 	                .status(order.getOrderStatus())
 	                // CUSTOMER
 	                .customerId(order.getCustomer().getId())
@@ -400,13 +392,295 @@ public class StaffServiceImpl implements StaffService{
 
 	        dtoList.add(dto);
 	    }
+	    return dtoList;
+	}
+	
+	
+	@Override
+	public List<CourierOrderDto> getDeliveredOrdersForStaff() {
 
+	    Long staffId = getStaffIdFromUserId();
+	    List<CourierOrder> orders = orderRepository.findDeliveredOrdersForStaff(staffId);
+	    List<CourierOrderDto> dtoList = new ArrayList<>();
+
+	    for (CourierOrder order : orders) {
+
+	        CourierOrderDto dto = CourierOrderDto.builder()
+	                .Orderid(order.getId())
+	                .trackingNumber(order.getTrackingNumber())
+	                .status(order.getOrderStatus())
+
+	                // CUSTOMER
+	                .customerId(order.getCustomer().getId())
+	                .customerName(order.getCustomer().getName())
+
+	                // ADDRESSES
+	                .pickupAddress(order.getPickupAddress().getFullAddress())
+	                .deliveryAddress(order.getDeliveryAddress().getFullAddress())
+
+	                // HUBS
+	                .sourceHubId(order.getSourceHub().getId())
+	                .sourceHubName(order.getSourceHub().getHubName())
+	                .destinationHubId(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getId()
+	                                : null
+	                )
+	                .destinationHubName(
+	                        order.getDestinationHub() != null
+	                                ? order.getDestinationHub().getHubName()
+	                                : null
+	                )
+
+	                // PACKAGE
+	                .packageWeight(order.getPackageWeight())
+	                .packageSize(order.getPackageSize())
+	                .deliveryType(order.getDeliveryType())
+	                .distanceKm(order.getDistanceKm())
+	                .price(order.getPrice())
+	                .build();
+
+	        dtoList.add(dto);
+	    }
 	    return dtoList;
 	}
 
 
 
+	@Override
+	public void assignOrderToStaff(Long orderid) {
+		
+		Long staffId = getStaffIdFromUserId();
+		
+		// Fetch staff profile
+	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Delivery staff not found")
+	            );
+
+	    //  Fetch order
+	    CourierOrder order = orderRepository.findById(orderid)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate order status
+	    if (order.getOrderStatus() != OrderStatus.CREATED) {
+	        throw new RuntimeException(
+	                "Order is not available for assignment"
+	        );
+	    }
+
+	    //  Prevent duplicate assignment
+	    if (assignmentRepository.existsByOrder(order)) {
+	        throw new RuntimeException("Order already assigned");
+	    }
+
+	    //  Update order status
+	    order.setOrderStatus(OrderStatus.PICKUP_ASSIGNED);
+	    orderRepository.save(order);
+
+	    //  Create delivery assignment
+	    DeliveryAssignment assignment = DeliveryAssignment.builder()
+	            .order(order)
+	            .deliveryStaff(staff)
+	            .manager(staff.getHub().getManager())
+	            .assignedBy(AssignedBy.MANAGER)
+	            .deliveryStatus(DeliveryStatus.ASSIGNED)
+	            .build();
+
+	    assignmentRepository.save(assignment);	
+	}
+
+
+	@Override
+	public void assignHubOrderToStaff(Long orderid) {
+		
+		Long staffId = getStaffIdFromUserId();
+		// Fetch staff profile
+	    DeliveryStaffProfile staff = staffRepo.findById(staffId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Delivery staff not found")
+	            );
+
+	    //  Fetch order
+	    CourierOrder order = orderRepository.findById(orderid)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate order status
+	    if (order.getOrderStatus() != OrderStatus.AT_DESTINATION_HUB){
+	        throw new RuntimeException(
+	                "Order is not available for assignment in hub"
+	        );
+	    }
+
+	    //  Prevent duplicate assignment
+	    if (assignmentRepository.existsByOrder(order)) {
+	        throw new RuntimeException("Order already assigned");
+	    }
+
+	    //  Update order status
+	    order.setOrderStatus(OrderStatus.OUT_FOR_DELIVERY);
+	    
+	    //Increment active orders safely
+	    int currentActive = staff.getActiveOrders() != null ? staff.getActiveOrders() : 0;
+
+	    staff.setActiveOrders(currentActive+1);
+	    orderRepository.save(order);
+
+	    //  Create delivery assignment
+	    DeliveryAssignment assignment = DeliveryAssignment.builder()
+	            .order(order)
+	            .deliveryStaff(staff)
+	            .manager(staff.getHub().getManager())
+	            .assignedBy(AssignedBy.MANAGER)
+	            .deliveryStatus(DeliveryStatus.PICKED_UP)
+	            .build();
+
+	    assignmentRepository.save(assignment);
+	    staffRepo.save(staff);	
+	}
+
+	@Override
+	public ApiResponse pickupAssignedOrder(Long orderId){
+		
+		Long staffId = getStaffIdFromUserId();
+		
+		 // Fetch Order
+	    CourierOrder order = orderRepository.findById(orderId)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Order not found")
+	            );
+
+	    //  Validate Order Status
+	    if (order.getOrderStatus() != OrderStatus.PICKUP_ASSIGNED) {
+	        throw new RuntimeException("Order is not in PICKUP_ASSIGNED state");
+	    }
+
+	    // 3 Fetch Assignment
+	    DeliveryAssignment assignment =
+	            assignmentRepository.findByOrder(order)
+	                    .orElseThrow(() ->
+	                            new RuntimeException("Delivery assignment not found")
+	                    );
+
+	    //  Validate Staff
+	    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+	        throw new RuntimeException("Order not assigned to this staff");
+	    }
+
+	    //  Validate Assignment Status
+	    if (assignment.getDeliveryStatus() != DeliveryStatus.ASSIGNED) {
+	        throw new RuntimeException("Order already picked or invalid state");
+	    }
+
+	    //  Update statuses
+	    order.setOrderStatus(OrderStatus.PICKED_UP);
+	    assignment.setDeliveryStatus(DeliveryStatus.PICKED_UP);
+
+	    //  Save
+	    orderRepository.save(order);
+	    assignmentRepository.save(assignment);
+
+	    return new ApiResponse("Order picked up successfully", "SUCCESS");
+		
+	}
+
+
+	@Override
+	public void completeCustomerPickup( Long orderId) {
+		
+		Long staffId = getStaffIdFromUserId();
+		
+		 CourierOrder order = orderRepository.findById(orderId)
+		            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+		    if (order.getOrderStatus() != OrderStatus.PICKED_UP) {
+		        throw new RuntimeException("Order is not in PICKED_UP state");
+		    }
+
+		    DeliveryAssignment assignment =
+		            assignmentRepository.findByOrderId(orderId)
+		                    .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+		    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+		        throw new RuntimeException("Order not assigned to this staff");
+		    }
+
+		    // Update order status
+		    order.setOrderStatus(OrderStatus.AT_SOURCE_HUB);
+
+		    // Update assignment status 
+		    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+
+		    // Update staff stats
+		    DeliveryStaffProfile staff = assignment.getDeliveryStaff();
+		    staff.setActiveOrders(staff.getActiveOrders() - 1);
+		    staff.setTotalDeliveries(staff.getTotalDeliveries() + 1);
+
+		    orderRepository.save(order);
+		    assignmentRepository.save(assignment);
+		    staffRepo.save(staff);	
+	}
+
+
+	@Override
+	public void completeHuborderPickup( Long orderId) {
 	
+		Long staffId = getStaffIdFromUserId();
+		CourierOrder order = orderRepository.findById(orderId)
+	            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+	    if (order.getOrderStatus() != OrderStatus.OUT_FOR_DELIVERY) {
+	        throw new RuntimeException("Order is not in OUT_FOR_DELIVERY state");
+	    }
+	    DeliveryAssignment assignment =
+	            assignmentRepository.findByOrderId(orderId)
+	                    .orElseThrow(() -> new RuntimeException("Assignment not found"));
+
+	    if (!assignment.getDeliveryStaff().getId().equals(staffId)) {
+	        throw new RuntimeException("Order not assigned to this staff");
+	    }
+
+	    // Update order status
+	    order.setOrderStatus(OrderStatus.DELIVERED);
+
+	    // Update assignment status 
+	    assignment.setDeliveryStatus(DeliveryStatus.DELIVERED);
+
+	    // Update staff stats
+	    DeliveryStaffProfile staff = assignment.getDeliveryStaff();
+	    staff.setActiveOrders(staff.getActiveOrders() - 1);
+	    staff.setTotalDeliveries(staff.getTotalDeliveries() + 1);
+
+	    orderRepository.save(order);
+	    assignmentRepository.save(assignment);
+	    staffRepo.save(staff);	
+	}
+
+
+	
+	public  Long getStaffIdFromUserId(){
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		if (authentication == null || !authentication.isAuthenticated()) {
+	        throw new RuntimeException("User not authenticated");
+	    }
+		
+	    Object principal = authentication.getPrincipal();
+	    if (!(principal instanceof CustomUserDetails)) {
+	        	throw new RuntimeException("Invalid authentication principal");
+	    }
+
+		CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+        DeliveryStaffProfile staff = staffRepo.findByUser_Id(user.getId())
+                .orElseThrow(() ->
+                        new RuntimeException("Delivery staff profile not found"));
+        return staff.getId();
+    }
 
 
 

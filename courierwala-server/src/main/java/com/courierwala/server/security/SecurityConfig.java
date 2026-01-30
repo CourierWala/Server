@@ -1,5 +1,6 @@
 package com.courierwala.server.security;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -9,7 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import com.courierwala.server.config.CorsConfig;
 import com.courierwala.server.jwtutils.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -19,12 +20,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final CorsConfig corsConfig;
+
 	private final JwtFilter jwtFilter;
 	private final CustomAccessDeniedHandler accessDeniedHandler;
 	private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
+  
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+		
 		http.csrf(csrf -> csrf.disable())
 		         .cors(cors -> {})
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
@@ -40,9 +46,25 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-		return http.build();
+	    return http.build();
 	}
+	
+
+
+//	@Bean
+//	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http
+//				.csrf(csrf -> csrf.disable())
+//				.cors(cors -> {})
+//				.authorizeHttpRequests(auth ->
+//						auth.anyRequest().permitAll()
+//				)
+//				.sessionManagement(session ->
+//						session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//				);
+//
+//		return http.build();
+//	}
 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {

@@ -1,22 +1,22 @@
 package com.courierwala.server.service;
 
-import com.courierwala.server.customerdto.CustomerProfileDto;
-import com.courierwala.server.customerdto.CustomerProfileUpdateDto;
-import com.courierwala.server.customerdto.ShipmentRequest;
-import com.courierwala.server.customerdto.ShipmentResDto;
-import com.courierwala.server.customerdto.SignUpDTO;
+import com.courierwala.server.customerdto.*;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.entities.User;
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 public interface CustomerService {
 
 
-    CustomerProfileDto getCustomerProfile(Long customerId);
+    CustomerProfileDto getCustomerProfile();
 
-    void updateCustomerProfile(Long customerId, CustomerProfileUpdateDto dto);
+    void updateCustomerProfile(CustomerProfileUpdateDto dto);
 
 	ShipmentResDto createShipment(@Valid ShipmentRequest request);
+
+    List<ShipmentSummaryDto> getAllMyShipments();
 
 }

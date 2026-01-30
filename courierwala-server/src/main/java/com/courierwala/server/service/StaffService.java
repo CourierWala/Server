@@ -27,29 +27,42 @@ public interface StaffService {
 
 
 
-	public staffProfileResponseDTO getStaffProfile(Long staffId);
+	public staffProfileResponseDTO getStaffProfile();
 
 
 
-	public ApiResponse updateStaffProfile(Long staffId, staffProfileResponseDTO dto);
+	public ApiResponse updateStaffProfile( staffProfileResponseDTO dto);
 
 
 
-	public  ApiResponse changePassword(Long staffId, @Valid ChangePasswordDto dto);
+	public  ApiResponse changePassword( @Valid ChangePasswordDto dto);
 
 
 	public  List<CourierOrderDto> getDashboardOrders();
 
-	public List<CourierOrderDto> getAcceptedOrders(Long staffId);
+	public List<CourierOrderDto> getAcceptedOrders();
 
 
-	public List<CourierOrderDto> getCurrentOrders(Long staffId);
+	public List<CourierOrderDto> getCurrentOrders();
 
 
 
-	
+	public void assignOrderToStaff(Long orderid);
 
-	
-	
+
+	public void assignHubOrderToStaff(Long orderid);
+
+
+	public ApiResponse pickupAssignedOrder( Long orderId);
+
+
+	public void completeCustomerPickup(Long orderId);
+
+
+
+	public void completeHuborderPickup(Long orderId);
+
+	public List<CourierOrderDto> getDeliveredOrdersForStaff();
+
 
 }
