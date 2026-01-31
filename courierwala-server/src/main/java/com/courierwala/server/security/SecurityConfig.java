@@ -40,6 +40,7 @@ public class SecurityConfig {
 						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
 					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
+						.requestMatchers("/api/manager/**").hasRole("STAFF_MANAGER")
 						.anyRequest().authenticated())
 				        .exceptionHandling(ex -> ex
 		                .accessDeniedHandler(accessDeniedHandler)        // 403

@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.courierwala.server.dto.PaymentOrderDTO;
 import com.courierwala.server.dto.PaymentVerificationRequest;
+import com.courierwala.server.dto.SendEmailDTO;
 import com.courierwala.server.entities.Payment;
+import com.courierwala.server.service.EmailService;
 import com.courierwala.server.service.PaymentService;
 import com.razorpay.RazorpayException;
 
@@ -28,6 +30,8 @@ public class PaymentController {
 
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping("/create")
     public ResponseEntity<?> create(
@@ -63,6 +67,8 @@ public class PaymentController {
                 request.getRazorpayOrderId(),
                 request.getRazorpayPaymentId()
         );
+        
+        emailService.sendEmail(new SendEmailDTO("Order Placed", "Your Order has been registered Successfully. Our Delivery Partner will Contact you soon."));
 
         return ResponseEntity.ok("Payment verified successfully");
     }

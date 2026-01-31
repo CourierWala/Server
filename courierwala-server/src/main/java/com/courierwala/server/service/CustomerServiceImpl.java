@@ -66,6 +66,9 @@ public class CustomerServiceImpl implements CustomerService {
 				req.getDeliveryLatitude(), req.getDeliveryLongitude());
 
 		System.out.println("after calling ======================================================================");
+		
+		
+		
 
 		PricingConfig pricing = pricingConfigRepository.findAll().stream().findFirst()
 				.orElseThrow(() -> new RuntimeException("Pricing config not found"));

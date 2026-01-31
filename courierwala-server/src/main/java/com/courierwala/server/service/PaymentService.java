@@ -9,36 +9,42 @@ import javax.crypto.spec.SecretKeySpec;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
+import com.courierwala.server.dto.SendEmailDTO;
 import com.courierwala.server.entities.CourierOrder;
 import com.courierwala.server.entities.Payment;
 import com.courierwala.server.enumfield.PaymentStatus;
 import com.courierwala.server.repository.CourierOrderRepository;
 import com.courierwala.server.repository.PaymentRepository;
+import com.courierwala.server.security.CustomUserDetails;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PaymentService {
 
-    @Autowired
-    private RazorpayClient razorpayClient;
+    private final RazorpayClient razorpayClient;
+    private final CourierOrderRepository courierOrderRepository;
+    private final PaymentRepository paymentRepository;
     
-    @Autowired
-    private CourierOrderRepository courierOrderRepository;
-
-    @Autowired
-    private PaymentRepository paymentRepository;
-
+    @Value("${razorpay.key.secret}")
+    private String razorpayKeySecret;
     
+
     public Payment createPaymentOrder(BigDecimal amount, Long order_id)
             throws RazorpayException {
-    	System.out.println("=================================================================================================================================");
-    	System.out.println("=================================================================================================================================");
     	
         JSONObject options = new JSONObject();
         options.put("amount", amount.multiply(BigDecimal.valueOf(100)) );
@@ -60,8 +66,6 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
     
-    @Value("${razorpay.key.secret}")
-    private String razorpayKeySecret;
 
     public boolean verifySignature(
             String orderId,
@@ -107,7 +111,7 @@ public class PaymentService {
     public void markPaymentSuccess(
             String orderId,
             String paymentId) {
-    	System.out.println("================================== Inside Mark Payment Success FUNC");
+    	
         Payment payment = paymentRepository
                 .findByRazorpayOrderId(orderId)
                 .orElseThrow(() ->

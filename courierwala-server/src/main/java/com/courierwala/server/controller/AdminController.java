@@ -82,8 +82,6 @@ public class AdminController {
 
     @GetMapping("/hubs")
     public List<HubDetailsDto> getAllHubs(){
-        List<HubDetailsDto> allHubs = adminService.getAllHubs();
-        allHubs.forEach(System.out::println);
         return adminService.getAllHubs();
     }
 
