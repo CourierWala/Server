@@ -4,7 +4,6 @@ import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.GetStaffDto;
 import com.courierwala.server.service.ManagerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

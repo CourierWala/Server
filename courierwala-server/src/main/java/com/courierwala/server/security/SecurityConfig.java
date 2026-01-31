@@ -35,9 +35,10 @@ public class SecurityConfig {
 		         .cors(cors -> {})
 				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
 						.permitAll()
-						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+						 .requestMatchers("/api/admin/**", "/api/customer/location/**").hasRole("ADMIN")
 						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
 					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
+						.requestMatchers("/api/manager/**").hasRole("STAFF_MANAGER")
 						.anyRequest().authenticated())
 				        .exceptionHandling(ex -> ex
 		                .accessDeniedHandler(accessDeniedHandler)        // 403
