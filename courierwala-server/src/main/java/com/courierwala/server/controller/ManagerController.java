@@ -34,14 +34,14 @@ public class ManagerController {
         );
     }
 
-    @GetMapping("/applications")
-    public List<GetStaffDto> getAllJobApplications() {
-        return managerService.getAllStaff(false);
+    @GetMapping("/applications/{managerId}")
+    public List<GetStaffDto> getAllJobApplications(@PathVariable Long managerId) {
+        return managerService.getAllStaff(false, managerId);
     }
 
-    @GetMapping("/current-staff")
-    public List<GetStaffDto> getAllCurrentStaff() {
-        return managerService.getAllStaff(true);
+    @GetMapping("/current-staff/{managerId}")
+    public List<GetStaffDto> getAllCurrentStaff(@PathVariable Long managerId) {
+        return managerService.getAllStaff(true, managerId);
     }
 
     @GetMapping("/rejectStaff/{rejectApplicationId}")

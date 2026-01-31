@@ -7,7 +7,7 @@ import java.util.List;
 public interface ManagerService {
     void acceptDeliveryStaff(Long applicationId);
 
-    List<GetStaffDto> getAllStaff(boolean isCurrentStaff);
+    List<GetStaffDto> getAllStaff(boolean isCurrentStaff, Long managerId);
 
     void rejectApplication(Long rejectApplicationId);
 }
