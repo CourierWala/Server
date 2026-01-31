@@ -41,6 +41,7 @@ public class StaffController {
 	
 	public final StaffService staffservice;
 
+
 	private final DeliveryStatsService deliveryStatsService;
 	private final EmailService emailService;
 	private final HubRepository hubRepository;
@@ -85,6 +86,7 @@ public class StaffController {
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));
 	    }
 	}
+
 	@PatchMapping("/dashboard/Hub/{orderid}")
 	public ResponseEntity<?> assignHubOrder(@PathVariable Long orderid)
 	{
@@ -92,6 +94,7 @@ public class StaffController {
 	    	staffservice.assignHubOrderToStaff( orderid);
 	        return ResponseEntity.ok(new ApiResponse("Hub-Order assigned successfully", "SUCCESS"));
 	    } catch (RuntimeException e) {
+	    	System.out.println("message  :  "+ e.getMessage());
 	        return ResponseEntity
 	                .status(HttpStatus.BAD_REQUEST)
 	                .body(new ApiResponse(e.getMessage(), "FAILED"));

@@ -30,7 +30,7 @@ public class HubMovementScheduler {
     /**
      * Runs every 2 minutes
      */
-    @Scheduled(fixedRate = 120000)
+    @Scheduled(fixedRate = 10000)
     @Transactional
     public void moveParcelsBetweenHubs() {
 

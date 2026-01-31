@@ -22,12 +22,13 @@ public class OrderTrackingService {
     private final OrderTrackingSnapshotRepository snapshotRepository;
 
 	
-    public TrackingResponse getTrackingByOrderId(Long orderId) {
+    public TrackingResponse getTrackingByOrderId(String trackingNumber) {
 
         // 1️⃣ Get snapshot (header info)
-        OrderTrackingSnapshot snapshot = snapshotRepository.findById(orderId)
+        OrderTrackingSnapshot snapshot = snapshotRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new RuntimeException("Tracking snapshot not found"));
-
+       
+        Long orderId = snapshot.getOrderId();
         // 2️⃣ Get timeline
         List<OrderStatusHistory> timeline =
                 historyRepository.findByOrderIdOrderByCreatedAtAsc(orderId);
