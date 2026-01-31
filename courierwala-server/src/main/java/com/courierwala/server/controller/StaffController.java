@@ -3,7 +3,9 @@ package com.courierwala.server.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
@@ -40,6 +44,10 @@ import lombok.RequiredArgsConstructor;
 public class StaffController {  
 	
 	public final StaffService staffservice;
+	private final RestClient restClient;	
+	@Value("${emailservice.url}")
+    private String emailUrl;
+
 
 
 	private final DeliveryStatsService deliveryStatsService;
@@ -239,8 +247,20 @@ public class StaffController {
        			email.setTo(managerEmail);
        			email.setSubject("New Job Application");
        			email.setMessage("Applicants Name: "+signupdto.getName()+"\nApplicants PhoneNO: "+signupdto.getPhone()+"\n Login To Manager Account to perform furthur action!");
-       			emailService.sendEmail(email);
-			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Applied for job successfully", "success"));
+       			try {
+       	            restClient.post()
+       	                    .uri(emailUrl)
+       	                    .contentType(MediaType.APPLICATION_JSON)
+       	                    .accept(MediaType.APPLICATION_JSON)
+       	                    .body(email)
+       	                    .retrieve()
+       	                    .toBodilessEntity();
+       	        } catch (RestClientException ex) {
+       	            System.out.printf("Email service failed", ex);
+       	        }
+
+       			
+       			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Applied for job successfully", "success"));
 		} catch (RuntimeException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
 					.body(new ApiResponse(e.getMessage(), "Failed"));

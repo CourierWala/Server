@@ -53,6 +53,7 @@ public class ManagerController {
                         "Delivery staff hired successfully!!!",
                         "SUCCESS"
                 )
+                
         );
     }
 
