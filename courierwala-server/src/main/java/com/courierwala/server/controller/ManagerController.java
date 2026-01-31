@@ -4,7 +4,6 @@ import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.GetStaffDto;
 import com.courierwala.server.service.ManagerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,14 +34,14 @@ public class ManagerController {
         );
     }
 
-    @GetMapping("/applications")
-    public List<GetStaffDto> getAllJobApplications() {
-        return managerService.getAllStaff(false);
+    @GetMapping("/applications/{managerId}")
+    public List<GetStaffDto> getAllJobApplications(@PathVariable Long managerId) {
+        return managerService.getAllStaff(false, managerId);
     }
 
-    @GetMapping("/current-staff")
-    public List<GetStaffDto> getAllCurrentStaff() {
-        return managerService.getAllStaff(true);
+    @GetMapping("/current-staff/{managerId}")
+    public List<GetStaffDto> getAllCurrentStaff(@PathVariable Long managerId) {
+        return managerService.getAllStaff(true, managerId);
     }
 
     @GetMapping("/rejectStaff/{rejectApplicationId}")

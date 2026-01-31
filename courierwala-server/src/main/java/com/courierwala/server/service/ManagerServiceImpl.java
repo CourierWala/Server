@@ -34,22 +34,24 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public List<GetStaffDto> getAllStaff(boolean isCurrentStaff) {
+    public List<GetStaffDto> getAllStaff(boolean isCurrentStaff, Long managerId) {
         List<DeliveryStaffProfile> staff = deliveryStaffProfileRepository.findAllByIsVerified(isCurrentStaff);
 
         List<GetStaffDto> res = new ArrayList<>();
 
-        for(DeliveryStaffProfile s : staff) {
-            GetStaffDto dto = GetStaffDto.builder()
-                    .Id(s.getId())
-                    .Name(s.getUser().getName())
-                    .Email(s.getUser().getEmail())
-                    .Phone(s.getUser().getPhone())
-                    .Location(s.getHub().getHubCity())
-                    .VehicleType(String.valueOf(s.getVehicleType()))
-                    .VehicleNum(s.getVehicleNumber())
-                    .build();
-            res.add(dto);
+        for (DeliveryStaffProfile s : staff) {
+            if (s.getHub().getManager().getId().equals(managerId)) {
+                GetStaffDto dto = GetStaffDto.builder()
+                        .Id(s.getId())
+                        .Name(s.getUser().getName())
+                        .Email(s.getUser().getEmail())
+                        .Phone(s.getUser().getPhone())
+                        .Location(s.getHub().getHubCity())
+                        .VehicleType(String.valueOf(s.getVehicleType()))
+                        .VehicleNum(s.getVehicleNumber())
+                        .build();
+                res.add(dto);
+            }
         }
 
         return res;
@@ -59,7 +61,7 @@ public class ManagerServiceImpl implements ManagerService {
     public void rejectApplication(Long rejectApplicationId) {
         DeliveryStaffProfile staff = deliveryStaffProfileRepository
                 .findById(rejectApplicationId)
-                .orElseThrow(()-> new RuntimeException("Application not found"));
+                .orElseThrow(() -> new RuntimeException("Application not found"));
 
         deliveryStaffProfileRepository.deleteById(rejectApplicationId);
         userRepository.deleteById(staff.getUser().getId());
