@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.naming.AuthenticationException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,7 +17,9 @@ import com.courierwala.server.customerdto.SignUpDTO;
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
 import com.courierwala.server.dto.LoginResDTO;
+import com.courierwala.server.dto.SendEmailDTO;
 import com.courierwala.server.service.AuthService;
+import com.courierwala.server.service.EmailService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,12 +32,19 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
 	private final AuthService authService;
+	@Autowired
+    private EmailService emailService;
 
 	// ================= SIGN UP =================
 	@PostMapping("/signup")
 	public ResponseEntity<?> signUp(@Valid @RequestBody SignUpDTO signupdto) {
 
 		ApiResponse response = authService.signUp(signupdto);
+		SendEmailDTO email = new SendEmailDTO(null,null);
+		email.setTo(signupdto.getEmail());
+		email.setSubject("SignUp SuccessFull");
+		email.setMessage(signupdto.getName()+"\nWelcome To CourierWala!!");
+		emailService.sendEmail(email);
 
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}

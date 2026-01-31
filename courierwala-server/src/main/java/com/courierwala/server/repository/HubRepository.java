@@ -6,8 +6,9 @@ import java.util.Optional;
 import com.courierwala.server.admindto.ManagerDetailsDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
- import com.courierwala.server.entities.Hub;
+import com.courierwala.server.entities.Hub;
 
 public interface HubRepository extends JpaRepository<Hub, Long> {
 
@@ -28,5 +29,10 @@ public interface HubRepository extends JpaRepository<Hub, Long> {
 
     Optional<Hub> findByIdAndManagerIsNotNull(Long hubId);
 
-
+    @Query("""
+    		SELECT h.manager.email
+    		FROM Hub h
+    		WHERE h.id = :hubId
+    		""")
+    String getHubManagerEmail(@Param("hubId") Long hubId);
 }

@@ -17,7 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.courierwala.server.dto.ApiResponse;
 import com.courierwala.server.dto.LoginDTO;
+import com.courierwala.server.dto.SendEmailDTO;
+import com.courierwala.server.repository.HubRepository;
 import com.courierwala.server.service.DeliveryStatsService;
+import com.courierwala.server.service.EmailService;
 import com.courierwala.server.service.StaffService;
 import com.courierwala.server.staffdto.ChangePasswordDto;
 import com.courierwala.server.staffdto.CourierOrderDto;
@@ -39,6 +42,8 @@ public class StaffController {
 	public final StaffService staffservice;
 
 	private final DeliveryStatsService deliveryStatsService;
+	private final EmailService emailService;
+	private final HubRepository hubRepository;
 	
 
 	@PatchMapping("/Current-Orders/Hub/{orderId}")
@@ -224,6 +229,14 @@ public class StaffController {
             @Valid @RequestBody StaffSignupDto signupdto){
         try {
         	   staffservice.signUp(signupdto);
+        	   //get managers email from hubId
+        	   String managerEmail = hubRepository.getHubManagerEmail(signupdto.getHubId());
+        	   
+        	   SendEmailDTO email = new SendEmailDTO(null,null);
+       			email.setTo(managerEmail);
+       			email.setSubject("New Job Application");
+       			email.setMessage("Applicants Name: "+signupdto.getName()+"\nApplicants PhoneNO: "+signupdto.getPhone()+"\n Login To Manager Account to perform furthur action!");
+       			emailService.sendEmail(email);
 			return ResponseEntity.status(HttpStatus.CREATED).body(new ApiResponse("Applied for job successfully", "success"));
 		} catch (RuntimeException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
