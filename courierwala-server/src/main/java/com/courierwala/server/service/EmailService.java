@@ -21,12 +21,17 @@ public class EmailService {
     private String emailUrl;
 	private String msg;
 	public void sendEmail(SendEmailDTO emailBody) {
+	
 		CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+	    
+		System.out.println("email : " + user.getUsername());
 		if(emailBody.getTo()==null) {			
 			emailBody.setTo(user.getUsername());
 		}
 		if(user != null) {
 		msg = "Hello "+user.getName()+",\n\t"+ emailBody.getMessage();
+//		msg = "Hello " + emailBody.getName() + ", \n \t" + emailBody.getMessage();
+		
 		emailBody.setMessage(msg);
 		}
 		try {
