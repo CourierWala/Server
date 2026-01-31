@@ -31,7 +31,6 @@ public class OrderTrackingController {
 	@GetMapping("/{trackingNumber}")
 	public ResponseEntity<?> getTimeline(@PathVariable String trackingNumber) {
      try {
-    	 System.out.println("tracking : " + trackingNumber);
  		TrackingResponse trackingResponce = orderTrackingService.getTrackingByOrderId(trackingNumber);
  		return ResponseEntity.ok(trackingResponce);
 	} catch (Exception e) {
