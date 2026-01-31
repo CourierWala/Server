@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.courierwala.server.customerdto.*;
 import com.courierwala.server.entities.*;
+import com.courierwala.server.exception.ResourceNotFoundException;
 import com.courierwala.server.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -181,6 +182,13 @@ public class CustomerServiceImpl implements CustomerService {
 						order.getDeliveryAddress().getCity().getCityName(), order.getOrderStatus(), order.getPrice(),
 						order.getPickupDate()))
 				.toList();
+	}
+
+	public String getTrackingNumberById(Long id){
+
+		CourierOrder courierOrder = courierOrderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No Order Exist With This Id !"));
+
+		return courierOrder.getTrackingNumber();
 	}
 
 }

@@ -2,15 +2,11 @@ package com.courierwala.server.controller;
 
 import java.math.BigDecimal;
 
+import com.courierwala.server.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.courierwala.server.dto.PaymentOrderDTO;
 import com.courierwala.server.dto.PaymentVerificationRequest;
@@ -33,6 +29,9 @@ public class PaymentController {
     @Autowired
     private EmailService emailService;
 
+    @Autowired
+    private CustomerService customerService;
+
     @PostMapping("/create")
     public ResponseEntity<?> create(
             @RequestParam BigDecimal amount, @RequestParam Long order_id)
@@ -50,7 +49,7 @@ public class PaymentController {
     @PostMapping("/verify")
     public ResponseEntity<String> verifyPayment(
             @RequestBody PaymentVerificationRequest request) {
-
+        //System.out.println("ORDER_ID " + order_id);
         boolean isValid = paymentService.verifySignature(
                 request.getRazorpayOrderId(),
                 request.getRazorpayPaymentId(),
@@ -67,8 +66,10 @@ public class PaymentController {
                 request.getRazorpayOrderId(),
                 request.getRazorpayPaymentId()
         );
-        
-        emailService.sendEmail(new SendEmailDTO("Order Placed", "Your Order has been registered Successfully. Our Delivery Partner will Contact you soon."));
+
+        //String trackingNumber = customerService.getTrackingNumberById(order_id);
+        //System.out.println("tracking number : " + trackingNumber);
+        emailService.sendEmail(new SendEmailDTO("Order Placed", "Your Order has been registered Successfully!!!.\n\nOur Delivery Partner will Contact you soon."));
 
         return ResponseEntity.ok("Payment verified successfully");
     }
