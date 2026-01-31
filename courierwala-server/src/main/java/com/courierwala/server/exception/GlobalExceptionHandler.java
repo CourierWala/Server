@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
+import com.courierwala.server.customerdto.ApiResponce;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -61,7 +63,7 @@ public class GlobalExceptionHandler {
     // Optional: fallback for unexpected business errors
     
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(
+    public ResponseEntity<?> handleRuntimeException(
             RuntimeException ex,
             WebRequest request) {
     	
@@ -76,6 +78,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(error);
+                .body(new ApiResponce("failed", ex.getMessage()));
     }
 }
