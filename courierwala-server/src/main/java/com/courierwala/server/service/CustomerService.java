@@ -19,4 +19,6 @@ public interface CustomerService {
 
     List<ShipmentSummaryDto> getAllMyShipments();
 
+    String getTrackingNumberById(Long id);
+
 }

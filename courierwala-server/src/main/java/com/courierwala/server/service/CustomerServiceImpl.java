@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.courierwala.server.customerdto.*;
 import com.courierwala.server.entities.*;
+import com.courierwala.server.exception.ResourceNotFoundException;
 import com.courierwala.server.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,20 +92,20 @@ public class CustomerServiceImpl implements CustomerService {
 			orderHubPathService.savePath(order, routing.getHubPath());
 		}
 
-		LocalDateTime now = LocalDateTime.now();
-
-		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.CREATED.name(), customer.getId(),
-				"Order created", now);
-
-		ShipmentCreatedEvent snapshotEvent = new ShipmentCreatedEvent(order.getId(), order.getTrackingNumber(),
-				pickupCity.getCityName(), deliveryCity.getCityName(), OrderStatus.CREATED.name(), now);
-
-		try {
-			orderEventPublisher.publishShipmentCreatedEvent(snapshotEvent);
-			orderEventPublisher.publishOrderStatusEvent(event);
-		} catch (Exception ex) {
-			log.error("Failed to publish shipment events", ex);
-		}
+//		LocalDateTime now = LocalDateTime.now();
+//
+//		OrderStatusEvent event = new OrderStatusEvent(order.getId(), OrderStatus.CREATED.name(), customer.getId(),
+//				"Order created", now);
+//
+//		ShipmentCreatedEvent snapshotEvent = new ShipmentCreatedEvent(order.getId(), order.getTrackingNumber(),
+//				pickupCity.getCityName(), deliveryCity.getCityName(), OrderStatus.CREATED.name(), now);
+//
+//		try {
+//			orderEventPublisher.publishShipmentCreatedEvent(snapshotEvent);
+//			orderEventPublisher.publishOrderStatusEvent(event);
+//		} catch (Exception ex) {
+//			log.error("Failed to publish shipment events", ex);
+//		}
 
 		return new ShipmentResDto(order.getId(), pri, "Shipment created successfully ", "success");
 
@@ -181,6 +182,13 @@ public class CustomerServiceImpl implements CustomerService {
 						order.getDeliveryAddress().getCity().getCityName(), order.getOrderStatus(), order.getPrice(),
 						order.getPickupDate()))
 				.toList();
+	}
+
+	public String getTrackingNumberById(Long id){
+
+		CourierOrder courierOrder = courierOrderRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("No Order Exist With This Id !"));
+
+		return courierOrder.getTrackingNumber();
 	}
 
 }
