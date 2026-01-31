@@ -46,10 +46,10 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(pdto);
     }
     
-    @PostMapping("/verify/{order_id}")
-    public ResponseEntity<String> verifyPayment(@PathVariable Long order_id,
+    @PostMapping("/verify")
+    public ResponseEntity<String> verifyPayment(
             @RequestBody PaymentVerificationRequest request) {
-
+        //System.out.println("ORDER_ID " + order_id);
         boolean isValid = paymentService.verifySignature(
                 request.getRazorpayOrderId(),
                 request.getRazorpayPaymentId(),
@@ -67,9 +67,9 @@ public class PaymentController {
                 request.getRazorpayPaymentId()
         );
 
-        String trackingNumber = customerService.getTrackingNumberById(order_id);
-        System.out.println("tracking number : " + trackingNumber);
-        emailService.sendEmail(new SendEmailDTO("Order Placed", "Your Order has been registered Successfully!!!.\nHere is your tracking no for future reference: "+trackingNumber+"\n\nOur Delivery Partner will Contact you soon."));
+        //String trackingNumber = customerService.getTrackingNumberById(order_id);
+        //System.out.println("tracking number : " + trackingNumber);
+        emailService.sendEmail(new SendEmailDTO("Order Placed", "Your Order has been registered Successfully!!!.\n\nOur Delivery Partner will Contact you soon."));
 
         return ResponseEntity.ok("Payment verified successfully");
     }
