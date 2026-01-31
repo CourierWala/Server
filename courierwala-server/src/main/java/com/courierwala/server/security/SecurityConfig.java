@@ -3,6 +3,7 @@ package com.courierwala.server.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,9 +34,10 @@ public class SecurityConfig {
 		
 		http.csrf(csrf -> csrf.disable())
 		         .cors(cors -> {})
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/staff/applyforjob")
-						.permitAll()
-						 .requestMatchers("/api/admin/**", "/api/customer/location/**").hasRole("ADMIN")
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+						 .requestMatchers("/api/auth/**", "/api/staff/applyforjob").permitAll()
+						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
 					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")
 						.requestMatchers("/api/manager/**").hasRole("STAFF_MANAGER")

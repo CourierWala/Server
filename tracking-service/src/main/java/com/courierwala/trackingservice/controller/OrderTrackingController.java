@@ -28,10 +28,10 @@ public class OrderTrackingController {
 
 	private final OrderTrackingService orderTrackingService;
 	
-	@GetMapping("/{orderId}")
-	public ResponseEntity<?> getTimeline(@PathVariable Long orderId) {
+	@GetMapping("/{trackingNumber}")
+	public ResponseEntity<?> getTimeline(@PathVariable String trackingNumber) {
      try {
- 		TrackingResponse trackingResponce = orderTrackingService.getTrackingByOrderId(orderId);
+ 		TrackingResponse trackingResponce = orderTrackingService.getTrackingByOrderId(trackingNumber);
  		return ResponseEntity.ok(trackingResponce);
 	} catch (Exception e) {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No Order Found with this Tracking Number !!");

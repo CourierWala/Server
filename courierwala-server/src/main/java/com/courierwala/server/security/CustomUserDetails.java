@@ -13,15 +13,18 @@ public class CustomUserDetails implements UserDetails {
     private final Long id;
     private final String email;
     private final String password;
+    private final String name;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public CustomUserDetails(Long id,
                              String email,
                              String password,
+                             String name,
                              Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.email = email;
         this.password = password;
+        this.name = name;
         this.authorities = authorities;
     }
 
@@ -30,6 +33,9 @@ public class CustomUserDetails implements UserDetails {
         return id;
     }
 
+    public String getName() {
+    	return name;
+    }
     
 
     //  Spring Security methods
