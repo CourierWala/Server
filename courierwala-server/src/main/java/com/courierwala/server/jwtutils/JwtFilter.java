@@ -98,6 +98,11 @@ public class JwtFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/auth/");
+    }
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -116,7 +121,18 @@ public class JwtFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
+        
+        System.out.println(">>> JwtFilter invoked for: " + request.getRequestURI());
 
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            System.out.println(">>> No cookies found in request");
+        } else {
+            for (Cookie cookie : cookies) {
+                System.out.println(">>> Cookie: " + cookie.getName());
+            }
+        }
+        
         try {
             String token = getTokenFromCookie(request);
 
@@ -130,7 +146,8 @@ public class JwtFilter extends OncePerRequestFilter {
                             userDetailsService.loadUserByUsername(username);
 
                     if (jwtUtil.isTokenValid(token, userDetails)) {
-
+                    	 System.out.println(">>> AUTH USER: " + userDetails.getUsername());
+                    	    System.out.println(">>> AUTHORITIES: " + userDetails.getAuthorities());
                         UsernamePasswordAuthenticationToken authToken =
                                 new UsernamePasswordAuthenticationToken(
                                         userDetails,
@@ -162,7 +179,7 @@ public class JwtFilter extends OncePerRequestFilter {
     private String getTokenFromCookie(HttpServletRequest request) {
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
-                if ("JWT_TOKEN".equals(cookie.getName())) {
+                if ("JWT".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

@@ -16,10 +16,10 @@ import com.courierwala.server.service.EmailService;
 import com.courierwala.server.service.PaymentService;
 import com.razorpay.RazorpayException;
 
-@CrossOrigin(
-	    origins = "http://localhost:5173",
-	    allowCredentials = "true"
-	)
+//@CrossOrigin(
+//	    origins = "http://3.7.13.235:80",
+//	    allowCredentials = "true"
+//	)
 @RestController
 @RequestMapping("/api/payments")
 public class PaymentController {

@@ -34,10 +34,10 @@ import com.courierwala.server.staffdto.staffProfileResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(
-	    origins = "http://localhost:5173",
-	    allowCredentials = "true"
-	)
+//@CrossOrigin(
+//	    origins = "http://3.7.13.235:80",
+//	    allowCredentials = "true"
+//	)
 @RestController
 @RequestMapping("/api/staff")
 @RequiredArgsConstructor
