@@ -94,21 +94,25 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtUtil.generateToken(user);
 
         // 4 Store JWT in HttpOnly cookie
+
 //        ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", token)
 //                .httpOnly(true)
-//                .secure(false)        // true in production (HTTPS)
-//                .sameSite("Lax")      // use "None" + Secure(true) for cross-domain prod
+//                .secure(true)          // MUST be true
+//                .sameSite("None")      // MUST be None
 //                .path("/")
-//                .maxAge(24 * 60 * 60) // 1 day
+//                .maxAge(24 * 60 * 60)
 //                .build();
         
-        ResponseCookie cookie = ResponseCookie.from("JWT_TOKEN", token)
+        ResponseCookie cookie = ResponseCookie.from("JWT", token)
                 .httpOnly(true)
-                .secure(true)          // MUST be true
-                .sameSite("None")      // MUST be None
+                .secure(true)               // true ONLY if HTTPS
                 .path("/")
-                .maxAge(24 * 60 * 60)
+                .sameSite("Lax")            // 🔥 REQUIRED
+                .maxAge(24* 60 * 60)
                 .build();
+//
+//        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
 
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

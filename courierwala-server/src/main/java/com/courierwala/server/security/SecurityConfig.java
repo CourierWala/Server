@@ -11,7 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.courierwala.server.config.CorsConfig;
+
 import com.courierwala.server.jwtutils.JwtFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CorsConfig corsConfig;
+//    private final CorsConfig corsConfig;
 
 	private final JwtFilter jwtFilter;
 	private final CustomAccessDeniedHandler accessDeniedHandler;
@@ -33,10 +33,11 @@ public class SecurityConfig {
 
 		
 		http.csrf(csrf -> csrf.disable())
-		         .cors(cors -> {})
+//		         .cors(Customizer.withDefaults())
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						 .requestMatchers("/api/auth/**", "/api/staff/applyforjob").permitAll()
+						 .requestMatchers("/api/payments/**").hasRole("CUSTOMER")
 						 .requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/customer/**").hasRole("CUSTOMER")
 					    .requestMatchers("/api/staff/**").hasRole("DELIVERY_STAFF")

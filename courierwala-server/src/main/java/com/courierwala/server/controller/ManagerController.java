@@ -14,10 +14,10 @@ import org.springframework.web.client.RestClientException;
 
 import java.util.List;
 
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowCredentials = "true"
-)
+//@CrossOrigin(
+//        origins = "http://3.7.13.235:80",
+//        allowCredentials = "true"
+//)
 @RestController
 @RequestMapping("/api/manager")
 @RequiredArgsConstructor
