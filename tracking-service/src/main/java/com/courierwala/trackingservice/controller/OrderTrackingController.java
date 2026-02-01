@@ -16,10 +16,10 @@ import com.courierwala.trackingservice.service.OrderTrackingService;
 
 import lombok.RequiredArgsConstructor;
 
-@CrossOrigin(
-	    origins = "http://localhost:5173/",
-	    allowCredentials = "true"
-	)
+//@CrossOrigin(
+//	    origins = "http://localhost:5173/",
+//	    allowCredentials = "true"
+//	)
 
 @RestController
 @RequiredArgsConstructor
